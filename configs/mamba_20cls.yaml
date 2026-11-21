@@ -54,4 +54,7 @@ eval:
   split: test
   fractions: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
   threshold: 0.9        # 최대 클래스 확률이 이 값 이상이면 예측 확정
+  # 연산량·지연 시간을 세는 방식. 둘 다 실제로 실행해 나란히 기록한다 (예측은 서로 같다).
+  #   streaming: 상태를 유지하며 새 점만 처리 / recompute: 시점마다 prefix 전체를 재추론
+  modes: [streaming, recompute]
   warmup_iters: 100     # 지연 시간 측정 전 GPU 예열 횟수

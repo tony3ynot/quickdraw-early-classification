@@ -10,13 +10,20 @@
                100%까지 넘지 못하면 100% 시점의 예측을 사용.
   - batch size 1
 
-연산량과 지연 시간을 세는 방식 (결과 파일에도 기록된다)
-  (A) recompute: 관찰 시점마다 그때까지 본 prefix 전체를 처음부터 다시 추론한다.
-      어떤 모델에도 똑같이 적용할 수 있어 팀 비교용 주 지표로 쓴다. 지연 시간은 이 방식으로 실측.
-  (B) streaming: 상태를 유지하면서 새로 들어온 점만 처리한다고 가정한 FLOPs.
-      Mamba/GRU처럼 상태를 이어 갈 수 있는 모델에서만 가능하다. 계산값만 보고하고 지연 시간은 재지 않는다.
-  - 관찰 시점이 바뀌어도 본 점 개수가 그대로면(아주 짧은 스케치) 다시 추론하지 않는다.
-  - 지연 시간은 GPU에서 forward + softmax + 결과를 CPU로 가져오는 시간이다.
+연산량과 지연 시간을 세는 두 가지 방식 (둘 다 실제로 실행해서 기록한다)
+  streaming : 상태를 유지하면서 새로 들어온 점만 처리한다. 이미 본 점은 다시 계산하지 않는다.
+              Mamba/GRU처럼 순서대로 읽는 모델에서 가능하며, 예측은 recompute와 같다.
+              model.init_stream_state / step / classify 가 필요하다.
+  recompute : 관찰 시점마다 그때까지 본 prefix 전체를 처음부터 다시 추론한다.
+              어떤 모델에도 똑같이 적용할 수 있는 기준선. model(x, last_only=True)만 있으면 된다.
+두 방식은 같은 예측과 같은 정지 시점을 내고 비용만 다르다 (일치율을 결과에 기록한다).
+FLOPs는 streaming이 이 모델에 실제로 필요한 계산량이다. 지연 시간은 구현에 좌우된다:
+streaming은 점 하나마다 모델을 호출하고, recompute는 관찰 시점마다 한 번만 호출한다.
+
+공통 가정
+  - FLOPs = 처리한 점 개수 × 점 하나당 FLOPs + 예측 횟수 × 분류 head FLOPs (qd/flops.py)
+  - 관찰 시점이 바뀌어도 본 점 개수가 그대로면(아주 짧은 스케치) 다시 예측하지 않는다.
+  - 지연 시간은 GPU에서 모델 계산 + softmax + 결과를 CPU로 가져오는 시간이다.
     입력 정규화 같은 전처리는 포함하지 않는다.
 """
 from __future__ import annotations
@@ -33,6 +40,8 @@ from qd.common import count_parameters, load_config, run_dir
 from qd.data import SketchSplit, build_cache, load_meta, load_split, prefix_lengths
 from qd.flops import flops_per_token, head_flops
 from qd.model import build_model
+
+MODE_LABEL = {"streaming": "상태 유지 (새 점만 처리)", "recompute": "시점마다 재추론"}
 
 
 def fraction_predictions(logits: torch.Tensor, lengths: torch.Tensor, fractions) -> torch.Tensor:
@@ -56,91 +65,133 @@ def accuracy_by_fraction(model, split: SketchSplit, fractions, batch_size: int) 
     return (correct / len(split)).tolist()
 
 
+# --------------------------------------------------------------------------- #
+# 스케치 한 장에 정지 정책을 실행하는 두 가지 방식
+#   입력: x [1, 점 개수, 3], n_obs [K] 시점별 관찰 점 개수
+#   출력: (정지 시점 index, 예측, 확률, 누적 지연(초), 처리한 점 개수, 예측 횟수)
+# --------------------------------------------------------------------------- #
+def _read_top(logits: torch.Tensor) -> tuple[float, int]:
+    """logits [1, C] → (최대 확률, 그 클래스). .item()이 GPU 계산이 끝나기를 기다린다."""
+    top = logits.softmax(-1).max(-1)
+    return top.values.item(), top.indices.item()
+
+
+def _run_recompute(model, x, n_obs, threshold, state=None):
+    """관찰 시점마다 앞 m개 점을 처음부터 다시 추론한다."""
+    seen, conf, pred = 0, 0.0, -1
+    latency, points_processed, n_readouts = 0.0, 0, 0
+    for k, m in enumerate(n_obs):
+        m = int(m)
+        if m != seen:  # 새 점이 들어왔을 때만 다시 예측
+            torch.cuda.synchronize()
+            t0 = time.perf_counter()
+            conf, pred = _read_top(model(x[:, :m], last_only=True))
+            latency += time.perf_counter() - t0
+            points_processed += m
+            n_readouts += 1
+            seen = m
+        if conf >= threshold or k == len(n_obs) - 1:
+            break
+    return k, pred, conf, latency, points_processed, n_readouts
+
+
+def _run_streaming(model, x, n_obs, threshold, state):
+    """상태를 유지하면서, 직전 관찰 시점 이후에 새로 들어온 점만 하나씩 처리한다."""
+    for conv_state, ssm_state in state:  # 새 스케치이므로 상태를 비운다
+        conv_state.zero_()
+        ssm_state.zero_()
+    seen, conf, pred = 0, 0.0, -1
+    latency, n_readouts = 0.0, 0
+    for k, m in enumerate(n_obs):
+        m = int(m)
+        if m != seen:
+            torch.cuda.synchronize()
+            t0 = time.perf_counter()
+            for t in range(seen, m):  # 새 점들만
+                feature = model.step(x[:, t], state)
+            conf, pred = _read_top(model.classify(feature))
+            latency += time.perf_counter() - t0
+            n_readouts += 1
+            seen = m
+        if conf >= threshold or k == len(n_obs) - 1:
+            break
+    return k, pred, conf, latency, seen, n_readouts
+
+
+RUNNERS = {"recompute": _run_recompute, "streaming": _run_streaming}
+
+
 @torch.inference_mode()
 def early_stopping_eval(model, split: SketchSplit, indices: torch.Tensor, fractions,
-                        threshold: float, warmup_iters: int) -> dict:
+                        threshold: float, warmup_iters: int, mode: str) -> dict:
     """batch size 1로 정지 정책을 실제로 실행하면서 스케치별 기록을 남긴다."""
     model.eval()
     device = split.points.device
-    n_obs = prefix_lengths(split.lengths, fractions).cpu().numpy()  # [N, K] 시점별 관찰 점 개수
-    last = len(fractions) - 1
+    n_obs = prefix_lengths(split.lengths, fractions).cpu().numpy()  # [N, K]
+    run = RUNNERS[mode]
+    state = model.init_stream_state(batch_size=1) if mode == "streaming" else None
 
-    # GPU 예열: 처음 몇 번의 forward는 느리므로 측정에서 뺀다.
+    def sketch(i: int) -> torch.Tensor:
+        return split.batch(torch.tensor([i], device=device))[0]  # [1, 점 개수, 3]
+
+    # GPU 예열: 처음 몇 번은 느리므로 측정에서 뺀다.
     for i in indices[:warmup_iters].tolist():
-        x, _, _ = split.batch(torch.tensor([i], device=device))
-        model(x, last_only=True)
-    torch.cuda.synchronize()
+        run(model, sketch(i), n_obs[i], threshold, state)
 
     n = len(indices)
     rec = {
-        "stop_index": np.zeros(n, dtype=np.int64),         # 몇 번째 관찰 시점에서 멈췄는지
+        "stop_index": np.zeros(n, dtype=np.int64),        # 몇 번째 관찰 시점에서 멈췄는지
         "pred": np.zeros(n, dtype=np.int64),
         "confidence": np.zeros(n, dtype=np.float64),
-        "latency": np.zeros(n, dtype=np.float64),          # 정지까지 누적 추론 시간(초), 방식 A
-        "points_recomputed": np.zeros(n, dtype=np.int64),  # 방식 A에서 처리한 점 개수의 합
-        "points_seen": np.zeros(n, dtype=np.int64),        # 정지 시점까지 관찰한 점 개수
-        "n_forward": np.zeros(n, dtype=np.int64),
-        "full_latency": np.zeros(n, dtype=np.float64),     # 참고: 전체 스케치를 한 번 추론하는 시간
+        "latency": np.zeros(n, dtype=np.float64),          # 정지까지 누적 추론 시간(초)
+        "points_processed": np.zeros(n, dtype=np.int64),   # 정지까지 모델이 계산한 점 개수
+        "n_readouts": np.zeros(n, dtype=np.int64),         # 정지까지 예측을 읽은 횟수
     }
-
     for row, i in enumerate(indices.tolist()):
-        x, _, _ = split.batch(torch.tensor([i], device=device))  # [1, n_points, 3]
-        seen, conf, pred = 0, 0.0, -1
-        for k in range(len(fractions)):
-            m = int(n_obs[i, k])
-            if m != seen:  # 새 점이 들어왔을 때만 다시 추론
-                torch.cuda.synchronize()
-                t0 = time.perf_counter()
-                probs = model(x[:, :m], last_only=True).softmax(-1)  # 앞 m개 점만 입력
-                top = probs.max(-1)
-                conf, pred = top.values.item(), top.indices.item()   # .item()이 GPU 완료를 기다린다
-                rec["latency"][row] += time.perf_counter() - t0
-                rec["points_recomputed"][row] += m
-                rec["n_forward"][row] += 1
-                seen = m
-            if conf >= threshold or k == last:
-                break
-        rec["stop_index"][row], rec["pred"][row], rec["confidence"][row] = k, pred, conf
-        rec["points_seen"][row] = seen
-
-        # 참고용: 조기 정지 없이 전체 스케치를 한 번만 추론할 때의 시간
-        torch.cuda.synchronize()
-        t0 = time.perf_counter()
-        model(x, last_only=True).softmax(-1).max(-1).values.item()
-        rec["full_latency"][row] = time.perf_counter() - t0
+        (rec["stop_index"][row], rec["pred"][row], rec["confidence"][row], rec["latency"][row],
+         rec["points_processed"][row], rec["n_readouts"][row]) = run(
+            model, sketch(i), n_obs[i], threshold, state)
     return rec
 
 
-def summarize(rec: dict, labels: np.ndarray, n_points: np.ndarray, fractions, threshold: float,
+@torch.inference_mode()
+def single_pass_latency(model, split: SketchSplit, indices: torch.Tensor, warmup_iters: int) -> np.ndarray:
+    """참고용: 조기 정지 없이 완성된 스케치를 한 번만 추론하는 시간(초)."""
+    model.eval()
+    device = split.points.device
+    out = np.zeros(len(indices))
+    for i in indices[:warmup_iters].tolist():  # 예열
+        _read_top(model(split.batch(torch.tensor([i], device=device))[0], last_only=True))
+    for row, i in enumerate(indices.tolist()):
+        x = split.batch(torch.tensor([i], device=device))[0]
+        torch.cuda.synchronize()
+        t0 = time.perf_counter()
+        _read_top(model(x, last_only=True))
+        out[row] = time.perf_counter() - t0
+    return out
+
+
+def summarize(rec: dict, labels: np.ndarray, fractions, threshold: float,
               classes: list[str], per_token: int, head: int) -> dict:
     """스케치별 기록 → 팀 공통 지표."""
     fractions = np.asarray(fractions)
     correct = rec["pred"] == labels
     stop_fraction = fractions[rec["stop_index"]]
-    flops_recompute = per_token * rec["points_recomputed"] + head * rec["n_forward"]
-    flops_streaming = per_token * rec["points_seen"] + head * rec["n_forward"]
+    flops = per_token * rec["points_processed"] + head * rec["n_readouts"]
     latency_ms = rec["latency"] * 1e3
 
     result = {
-        "n_sketches": int(len(labels)),
-        "threshold": threshold,
         "stopping_accuracy": float(correct.mean()),
         "mean_earliness": float(stop_fraction.mean()),
-        "cumulative_flops_recompute_mean": float(flops_recompute.mean()),
-        "cumulative_flops_streaming_mean": float(flops_streaming.mean()),
+        "cumulative_flops_mean": float(flops.mean()),
         "cumulative_latency_ms": {
             "mean": float(latency_ms.mean()),
             "median": float(np.median(latency_ms)),
             "p95": float(np.percentile(latency_ms, 95)),
         },
-        "mean_forward_calls": float(rec["n_forward"].mean()),
+        "mean_points_processed": float(rec["points_processed"].mean()),
+        "mean_readouts": float(rec["n_readouts"].mean()),
         "stopped_by_threshold_rate": float((rec["confidence"] >= threshold).mean()),
-        "full_sketch_single_pass": {  # 조기 정지를 안 쓸 때의 비용 (정확도는 accuracy_by_fraction의 100%)
-            "flops_mean": float(per_token * n_points.mean() + head),
-            "latency_ms_mean": float(rec["full_latency"].mean() * 1e3),
-        },
-        "flops_per_point": per_token,
-        "head_flops": head,
         "stop_distribution": [],
         "per_class": [],
     }
@@ -165,9 +216,13 @@ def summarize(rec: dict, labels: np.ndarray, n_points: np.ndarray, fractions, th
 
 def to_markdown(r: dict) -> str:
     """결과 요약을 팀에 공유하기 좋은 markdown으로 만든다."""
-    es, info = r["early_stopping"], r["info"]
-    lat = es["cumulative_latency_ms"]
-    full = es["full_sketch_single_pass"]
+    es, info, single = r["early_stopping"], r["info"], r["single_pass"]
+    modes = list(es["modes"])
+    first = es["modes"][modes[0]]  # 정지 분포·클래스별 표에 쓴다 (두 방식의 결정은 같다)
+
+    def row(name: str, value) -> str:
+        return f"| {name} | " + " | ".join(value(es["modes"][m]) for m in modes) + " |"
+
     lines = [
         f"# {info['run_name']}: {info['split']} 평가 결과",
         "",
@@ -185,19 +240,35 @@ def to_markdown(r: dict) -> str:
     lines += [
         "",
         "## 조기 예측 지표",
-        "| 지표 | 값 |",
-        "|---|---|",
-        f"| Stopping Accuracy | {es['stopping_accuracy']:.2%} |",
-        f"| Mean Earliness | {es['mean_earliness']:.1%} |",
-        f"| Cumulative FLOPs (A: 시점마다 처음부터 재추론) | {es['cumulative_flops_recompute_mean'] / 1e6:.1f} M |",
-        f"| Cumulative FLOPs (B: 상태 유지, 새 점만 처리) | {es['cumulative_flops_streaming_mean'] / 1e6:.1f} M |",
-        f"| Cumulative Latency (A, 실측) | 평균 {lat['mean']:.2f} ms / 중앙값 {lat['median']:.2f} ms / p95 {lat['p95']:.2f} ms |",
-        f"| 정지까지 평균 추론 횟수 | {es['mean_forward_calls']:.2f} |",
-        f"| threshold를 넘겨서 멈춘 비율 | {es['stopped_by_threshold_rate']:.1%} |",
+        "| 지표 | " + " | ".join(MODE_LABEL[m] for m in modes) + " |",
+        "|---|" + "---|" * len(modes),
+        row("Stopping Accuracy", lambda s: f"{s['stopping_accuracy']:.2%}"),
+        row("Mean Earliness", lambda s: f"{s['mean_earliness']:.1%}"),
+        row("Cumulative FLOPs", lambda s: f"{s['cumulative_flops_mean'] / 1e6:.1f} M"),
+        row("Cumulative Latency (평균)", lambda s: f"{s['cumulative_latency_ms']['mean']:.2f} ms"),
+        row("Cumulative Latency (중앙값 / p95)",
+            lambda s: f"{s['cumulative_latency_ms']['median']:.2f} / {s['cumulative_latency_ms']['p95']:.2f} ms"),
+        row("정지까지 모델이 계산한 점 개수 (평균)", lambda s: f"{s['mean_points_processed']:.1f}"),
+        row("정지까지 예측 횟수 (평균)", lambda s: f"{s['mean_readouts']:.2f}"),
+        row("threshold를 넘겨서 멈춘 비율", lambda s: f"{s['stopped_by_threshold_rate']:.1%}"),
         "",
-        "참고 (조기 정지 없이 전체 스케치를 한 번 추론): "
-        f"정확도 {r['accuracy_by_fraction'][-1]:.2%}, "
-        f"FLOPs {full['flops_mean'] / 1e6:.1f} M, 지연 {full['latency_ms_mean']:.2f} ms",
+    ]
+    if es.get("decision_agreement") is not None:
+        lines.append(f"- 두 방식의 정지 시점과 예측이 일치한 스케치: {es['decision_agreement']:.3%} "
+                     "(비용만 다르고 결정은 같다)")
+    if "streaming" in es["modes"]:
+        s = es["modes"]["streaming"]
+        lines.append("- 상태 유지는 점 하나마다 모델을 호출한다: 점 하나당 평균 "
+                     f"{s['cumulative_latency_ms']['mean'] / s['mean_points_processed']:.2f} ms")
+    if "recompute" in es["modes"]:
+        s = es["modes"]["recompute"]
+        lines.append("- 재추론은 관찰 시점마다 한 번만 호출한다: 호출 한 번당 평균 "
+                     f"{s['cumulative_latency_ms']['mean'] / s['mean_readouts']:.2f} ms")
+    lines += [
+        "",
+        "참고 (조기 정지 없이 완성된 스케치를 한 번 추론): "
+        f"정확도 {single['accuracy']:.2%}, FLOPs {single['flops_mean'] / 1e6:.1f} M, "
+        f"지연 {single['latency_ms_mean']:.2f} ms",
         "",
         "## 관찰 비율별 정확도 (정지 정책 없이 그 시점에 예측)",
         "| 관찰 비율 | " + " | ".join(f"{f:.0%}" for f in r["fractions"]) + " |",
@@ -208,20 +279,21 @@ def to_markdown(r: dict) -> str:
         "| 정지 시점 | 비율 | 그 시점에 멈춘 스케치의 정확도 |",
         "|---|---|---|",
     ]
-    for d in es["stop_distribution"]:
+    for d in first["stop_distribution"]:
         acc = "-" if d["accuracy"] is None else f"{d['accuracy']:.1%}"
         lines.append(f"| {d['fraction']:.0%} | {d['share']:.1%} | {acc} |")
     lines += ["", "## 클래스별", "| 클래스 | 개수 | Stopping Accuracy | Mean Earliness |", "|---|---|---|---|"]
-    for c in es["per_class"]:
+    for c in first["per_class"]:
         lines.append(f"| {c['class']} | {c['n']} | {c['stopping_accuracy']:.1%} | {c['mean_earliness']:.1%} |")
     lines += [
         "",
         "## 측정 가정",
         "- 관찰 비율 f 시점에는 앞에서부터 ceil(점 개수 × f)개(최소 1개)의 점을 본다.",
+        "- 상태 유지: 상태를 이어 가며 새로 들어온 점만 하나씩 처리한다 (mamba-ssm의 step). "
+        "시점마다 재추론: 그때까지의 prefix 전체를 처음부터 다시 추론한다. 두 방식 모두 실제로 실행해 측정했다.",
         "- FLOPs는 곱셈-덧셈 1회를 1로 세고(fvcore 기준), 활성화·정규화는 세지 않는다. "
-        f"점 하나당 {es['flops_per_point']:,} FLOPs.",
-        "- (A)는 관찰 시점마다 prefix 전체를 다시 추론한 값이고, 지연 시간은 (A)로만 실측했다.",
-        "- 지연 시간은 forward + softmax + 결과를 CPU로 가져오는 시간이며 전처리는 제외했다.",
+        f"점 하나당 {r['flops_per_point']:,} FLOPs에 모델이 계산한 점 개수를 곱한다.",
+        "- 지연 시간은 모델 계산 + softmax + 결과를 CPU로 가져오는 시간이며 전처리는 제외했다.",
         "- 모델은 causal이어서 각 시점의 예측에 그 뒤의 점을 쓰지 않는다. "
         "단, 원본 데이터의 좌표는 완성된 스케치 기준으로 0~255로 맞춰져 있다 (README의 '알려진 한계').",
         "",
@@ -260,11 +332,24 @@ def main() -> None:
     if args.limit and args.limit < len(split):
         rng = torch.Generator().manual_seed(cfg["seed"])
         indices = torch.randperm(len(split), generator=rng)[: args.limit].sort().values
+    labels = split.labels[indices].cpu().numpy()
+    n_points = split.lengths[indices].cpu().numpy()
+    per_token, head = flops_per_token(model), head_flops(model)
 
     curve = accuracy_by_fraction(model, split, ec["fractions"], cfg["train"]["eval_batch_size"])
-    t0 = time.time()
-    rec = early_stopping_eval(model, split, indices, ec["fractions"], ec["threshold"], ec["warmup_iters"])
-    eval_seconds = time.time() - t0
+
+    # 정지 정책을 방식별로 실제 실행
+    records, seconds = {}, {}
+    for mode in ec["modes"]:
+        t0 = time.time()
+        records[mode] = early_stopping_eval(model, split, indices, ec["fractions"],
+                                            ec["threshold"], ec["warmup_iters"], mode)
+        seconds[mode] = round(time.time() - t0, 1)
+    agreement = None
+    if len(records) == 2:  # 두 방식이 같은 결정을 내리는지 (수치 오차로 아주 드물게 달라질 수 있다)
+        a, b = records.values()
+        agreement = float(((a["stop_index"] == b["stop_index"]) & (a["pred"] == b["pred"])).mean())
+    full_latency = single_pass_latency(model, split, indices, ec["warmup_iters"])
 
     result = {
         "info": {
@@ -279,17 +364,27 @@ def main() -> None:
             "checkpoint_epoch": ckpt["epoch"],
             "gpu": torch.cuda.get_device_name(0),
             "torch": torch.__version__,
-            "eval_seconds": round(eval_seconds, 1),
+            "eval_seconds": seconds,
         },
         "fractions": list(ec["fractions"]),
         "accuracy_by_fraction": curve,
-        "early_stopping": summarize(
-            rec,
-            labels=split.labels[indices].cpu().numpy(),
-            n_points=split.lengths[indices].cpu().numpy(),
-            fractions=ec["fractions"], threshold=ec["threshold"], classes=meta["classes"],
-            per_token=flops_per_token(model), head=head_flops(model),
-        ),
+        "flops_per_point": per_token,
+        "head_flops": head,
+        "single_pass": {  # 조기 정지를 쓰지 않을 때: 완성된 스케치를 한 번 추론
+            "accuracy": curve[-1],
+            "flops_mean": float(per_token * n_points.mean() + head),
+            "latency_ms_mean": float(full_latency.mean() * 1e3),
+        },
+        "early_stopping": {
+            "threshold": ec["threshold"],
+            "n_sketches": int(len(indices)),
+            "decision_agreement": agreement,
+            "modes": {
+                mode: summarize(rec, labels, ec["fractions"], ec["threshold"],
+                                meta["classes"], per_token, head)
+                for mode, rec in records.items()
+            },
+        },
     }
     summary_path = out / "train_summary.json"
     if summary_path.exists():
