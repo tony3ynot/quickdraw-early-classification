@@ -1,0 +1,17 @@
+{
+  "run_name": "mamba2_20cls",
+  "completed": true,
+  "epochs_done": 30,
+  "steps_done": 82020,
+  "train_seconds": 10457.4,
+  "val_seconds": 93.2,
+  "train_hours": 2.905,
+  "best_epoch": 28,
+  "best_val_mean_acc": 0.7964,
+  "n_params": 883220,
+  "gpu": "NVIDIA L4",
+  "peak_gpu_memory_gb": 4.45,
+  "n_train": 1400000,
+  "n_valid": 50000,
+  "torch": "2.8.0+cu128"
+}
