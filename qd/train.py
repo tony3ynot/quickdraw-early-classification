@@ -26,7 +26,7 @@ import torch
 import torch.nn.functional as F
 
 from qd.common import Logger, count_parameters, load_config, run_dir, set_seed
-from qd.data import SketchSplit, build_cache, load_meta, load_split
+from qd.data import SketchSplit, build_cache, load_meta, load_split, prefix_lengths
 from qd.evaluate import fraction_predictions
 from qd.model import build_model
 
@@ -40,26 +40,68 @@ def dense_cross_entropy(logits: torch.Tensor, lengths: torch.Tensor, labels: tor
     return F.cross_entropy(logits[is_real].float(), targets[is_real], reduction=reduction)
 
 
+def elects_loss(logits: torch.Tensor, stop_logit: torch.Tensor, lengths: torch.Tensor,
+                labels: torch.Tensor, fractions, alpha: float) -> torch.Tensor:
+    """ELECTS loss (Rußwurm et al., arXiv 1901.10681)를 10개 관찰 시점에 적용한 것.
+
+    관찰 시점 k마다 모델이 정지 확률 δ_k를 낸다 (마지막 시점은 δ = 1).
+      P(k에서 멈춤) = δ_k · Π_{j<k} (1 − δ_j)
+      loss = Σ_k P(k에서 멈춤) · [ α · CE_k − (1 − α) · p_k(정답) · (1 − 관찰 비율_k) ]
+    첫 항은 멈추는 시점의 분류 loss, 둘째 항은 일찍 맞힐수록 큰 보상이다.
+
+    원 논문과 다른 점: 원 논문은 모든 시점에 ε/T를 더해 초반 붕괴를 막는데,
+    여기서는 그 역할을 baseline의 dense cross-entropy가 맡는다 (main에서 두 loss를 더한다).
+    """
+    pos = prefix_lengths(lengths, fractions) - 1                                  # [B, K]
+    obs_logits = logits.float().gather(1, pos.unsqueeze(-1).expand(-1, -1, logits.shape[-1]))
+    delta = torch.sigmoid(stop_logit.float().gather(1, pos))
+    delta = torch.cat([delta[:, :-1], torch.ones_like(delta[:, :1])], dim=1)       # 마지막은 강제 정지
+    still_going = torch.cumprod(1 - delta[:, :-1], dim=1)
+    still_going = torch.cat([torch.ones_like(delta[:, :1]), still_going], dim=1)   # Π_{j<k} (1 − δ_j)
+    p_stop = delta * still_going                                                   # [B, K], 합이 1
+
+    log_p = F.log_softmax(obs_logits, dim=-1)
+    ce = -log_p.gather(-1, labels.view(-1, 1, 1).expand(-1, log_p.shape[1], 1)).squeeze(-1)
+    frac = torch.tensor(list(fractions), device=logits.device, dtype=torch.float32)
+    earliness_reward = torch.exp(-ce) * (1 - frac)
+    return (p_stop * (alpha * ce - (1 - alpha) * earliness_reward)).sum(1).mean()
+
+
 @torch.no_grad()
 def validate(model, split: SketchSplit, fractions, batch_size: int, amp: bool) -> dict:
-    """검증 loss와, 10%~100% 각 시점에서 예측했을 때의 정확도(정지 정책 없이)."""
+    """검증 loss와, 10%~100% 각 시점에서 예측했을 때의 정확도(정지 정책 없이).
+
+    정지 head가 있는 모델이면 "정지 확률 ≥ 0.5에서 멈춤" 규칙의 정확도와 조기성도 함께 낸다.
+    """
     model.eval()
     loss_sum, n_points = 0.0, 0
     correct = torch.zeros(len(fractions), device=split.points.device)
+    frac = torch.tensor(list(fractions), device=split.points.device)
+    stop_correct, stop_fraction = 0.0, 0.0
     for x, lengths, labels in split.batches(batch_size):
         with torch.autocast("cuda", dtype=torch.bfloat16, enabled=amp):
-            logits = model(x)
+            _, logits, stop_logit = model.readout(model.encode(x))
         loss_sum += dense_cross_entropy(logits, lengths, labels, reduction="sum").item()
         n_points += int(lengths.sum())
         preds = fraction_predictions(logits, lengths, fractions)
         correct += (preds == labels.unsqueeze(1)).sum(0)
+        if stop_logit is not None:
+            stop = stop_logit.float().gather(1, prefix_lengths(lengths, fractions) - 1) >= 0
+            stop[:, -1] = True
+            stop_index = stop.float().argmax(1)  # 처음 멈추는 시점
+            stop_correct += (preds.gather(1, stop_index.unsqueeze(1)).squeeze(1) == labels).sum().item()
+            stop_fraction += frac[stop_index].sum().item()
     acc = (correct / len(split)).tolist()
-    return {
+    result = {
         "loss": loss_sum / n_points,
         "acc_by_fraction": [round(a, 4) for a in acc],
         "mean_acc": sum(acc) / len(acc),
         "final_acc": acc[-1],
     }
+    if model.stop_head is not None:
+        result["stop_accuracy"] = stop_correct / len(split)
+        result["stop_earliness"] = stop_fraction / len(split)
+    return result
 
 
 def main() -> None:
@@ -68,12 +110,23 @@ def main() -> None:
     parser.add_argument("--resume", action="store_true", help="last.pt가 있으면 이어서 학습")
     parser.add_argument("--max-steps", type=int, default=None, help="동작 확인용: 이 step 수만 돌고 종료")
     parser.add_argument("--run-name", default=None, help="설정 파일의 run_name 덮어쓰기")
+    parser.add_argument("--init", default=None, help="이 체크포인트의 가중치에서 시작 (미세조정)")
+    parser.add_argument("--epochs", type=int, default=None, help="설정 파일의 epochs 덮어쓰기")
+    parser.add_argument("--lr", type=float, default=None, help="설정 파일의 lr 덮어쓰기")
+    parser.add_argument("--alpha", type=float, default=None, help="설정 파일의 ELECTS alpha 덮어쓰기")
     args = parser.parse_args()
 
     cfg = load_config(args.config)
     if args.run_name:
         cfg["run_name"] = args.run_name
+    if args.epochs:
+        cfg["train"]["epochs"] = args.epochs
+    if args.lr:
+        cfg["train"]["lr"] = args.lr
+    if args.alpha is not None:
+        cfg["train"]["elects"]["alpha"] = args.alpha
     tc = cfg["train"]
+    elects = tc.get("elects")  # None이면 baseline (dense cross-entropy만)
     out = run_dir(cfg)
     log = Logger(out / "train.log")
     set_seed(cfg["seed"])
@@ -87,6 +140,10 @@ def main() -> None:
 
     # ---- 모델, 옵티마이저, 스케줄 ----
     model = build_model(cfg["model"], n_classes=len(meta["classes"])).to(device)
+    if args.init:
+        init = torch.load(args.init, map_location=device, weights_only=True)["model"]
+        missing = model.load_state_dict(init, strict=False).missing_keys  # 정지 head는 새로 초기화
+        log(f"init: {args.init} 에서 가중치를 불러옴 (새로 초기화된 파라미터: {missing or '없음'})")
     optimizer = torch.optim.AdamW(model.parameters(), lr=tc["lr"], weight_decay=tc["weight_decay"])
     steps_per_epoch = len(train) // tc["batch_size"]
     total_steps = steps_per_epoch * tc["epochs"]
@@ -126,8 +183,11 @@ def main() -> None:
         for i, (x, lengths, labels) in enumerate(
                 train.batches(tc["batch_size"], shuffle=True, generator=shuffle_rng, drop_last=True)):
             with torch.autocast("cuda", dtype=torch.bfloat16, enabled=tc["amp"]):
-                logits = model(x)
+                _, logits, stop_logit = model.readout(model.encode(x))
             loss = dense_cross_entropy(logits, lengths, labels)
+            if elects:
+                loss = loss + elects_loss(logits, stop_logit, lengths, labels,
+                                          cfg["eval"]["fractions"], elects["alpha"])
 
             optimizer.zero_grad(set_to_none=True)
             loss.backward()
@@ -156,7 +216,9 @@ def main() -> None:
         state["epoch"] = epoch + 1
         state["history"].append({"epoch": epoch + 1, "train_seconds": round(train_seconds, 1), **val})
         log(f"epoch {epoch + 1} 완료 ({train_seconds / 60:.1f}분)  val_loss {val['loss']:.4f}  "
-            f"val_acc@100% {val['final_acc']:.4f}  val_acc 평균(10~100%) {val['mean_acc']:.4f}")
+            f"val_acc@100% {val['final_acc']:.4f}  val_acc 평균(10~100%) {val['mean_acc']:.4f}"
+            + (f"  정지 head: 정확도 {val['stop_accuracy']:.4f} / 조기성 {val['stop_earliness']:.3f}"
+               if "stop_accuracy" in val else ""))
 
         weights = {"model": model.state_dict(), "config": cfg, "classes": meta["classes"],
                    "scale": meta["scale"], "epoch": epoch + 1, "val": val}

@@ -37,7 +37,7 @@ class MambaClassifier(nn.Module):
     """점 시퀀스 [B, L, 3] → 매 시점의 클래스 logits [B, L, C]."""
 
     def __init__(self, n_classes: int, d_in: int = 3, d_model: int = 256, n_layers: int = 2,
-                 d_state: int = 16, d_conv: int = 4, expand: int = 2):
+                 d_state: int = 16, d_conv: int = 4, expand: int = 2, stop_head: bool = False):
         super().__init__()
         self.embed = nn.Linear(d_in, d_model)  # 점 하나 (Δx, Δy, pen_lift) → 임베딩
         self.blocks = nn.ModuleList(
@@ -45,15 +45,28 @@ class MambaClassifier(nn.Module):
         )
         self.norm = nn.LayerNorm(d_model)
         self.head = nn.Linear(d_model, n_classes)
+        # ELECTS용: "지금 멈출 확률"의 logit을 내는 두 번째 출력 (baseline에는 없다)
+        self.stop_head = nn.Linear(d_model, 1) if stop_head else None
 
-    def forward(self, x: torch.Tensor, last_only: bool = False) -> torch.Tensor:
-        """last_only=True면 마지막 위치의 logits [B, C]만 계산한다 (추론용)."""
+    def encode(self, x: torch.Tensor, last_only: bool = False) -> torch.Tensor:
+        """점 시퀀스 → 매 시점의 hidden state [B, L, d_model] (last_only면 마지막 위치 [B, d_model])."""
         h = self.embed(x)
         for block in self.blocks:
             h = block(h)
-        if last_only:
-            h = h[:, -1]
-        return self.head(self.norm(h))
+        return h[:, -1] if last_only else h
+
+    def readout(self, hidden: torch.Tensor):
+        """hidden state → (정규화된 feature, 클래스 logits, 정지 logit 또는 None).
+
+        feature와 logits는 정지 정책(qd/policies.py)의 입력으로 쓰인다.
+        """
+        feature = self.norm(hidden)
+        stop_logit = self.stop_head(feature).squeeze(-1) if self.stop_head is not None else None
+        return feature, self.head(feature), stop_logit
+
+    def forward(self, x: torch.Tensor, last_only: bool = False) -> torch.Tensor:
+        """last_only=True면 마지막 위치의 logits [B, C]만 계산한다 (추론용)."""
+        return self.readout(self.encode(x, last_only))[1]
 
     # ---- 스트리밍 추론: 상태를 유지하면서 새로 들어온 점만 처리한다 ----
     # forward()로 prefix를 처음부터 다시 계산한 것과 같은 결과를 내지만 (tests/test_causality.py),
@@ -65,16 +78,16 @@ class MambaClassifier(nn.Module):
                 for block in self.blocks]
 
     def step(self, point: torch.Tensor, state: list) -> torch.Tensor:
-        """점 하나 [B, 3]을 처리한다. state는 제자리에서 갱신되고, 이 시점의 feature [B, d_model]을 돌려준다."""
+        """점 하나 [B, 3]을 처리한다. state는 제자리에서 갱신되고, 이 시점의 hidden state [B, d_model]을 돌려준다."""
         h = self.embed(point).unsqueeze(1)  # [B, 1, d_model]
         for block, (conv_state, ssm_state) in zip(self.blocks, state):
             out, _, _ = block.mixer.step(block.norm(h), conv_state, ssm_state)
             h = h + out
         return h.squeeze(1)
 
-    def classify(self, feature: torch.Tensor) -> torch.Tensor:
-        """step()이 돌려준 feature → 클래스 logits [B, C]."""
-        return self.head(self.norm(feature))
+    def classify(self, hidden: torch.Tensor) -> torch.Tensor:
+        """step()이나 encode()가 돌려준 hidden state → 클래스 logits [B, C]."""
+        return self.readout(hidden)[1]
 
 
 def build_model(model_cfg: dict, n_classes: int) -> MambaClassifier:

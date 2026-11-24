@@ -20,8 +20,8 @@ def flops_per_token(model: nn.Module) -> int:
     """점 하나를 처리하는 데 드는 FLOPs (분류 head 제외)."""
     total = 0
     for module in model.modules():
-        if module is model.head:
-            continue
+        if module is model.head or module is getattr(model, "stop_head", None):
+            continue  # 출력 head는 점마다가 아니라 예측을 읽을 때만 계산한다
         if isinstance(module, nn.Linear):
             total += module.in_features * module.out_features
         elif isinstance(module, nn.Conv1d):
@@ -32,8 +32,12 @@ def flops_per_token(model: nn.Module) -> int:
 
 
 def head_flops(model: nn.Module) -> int:
-    """분류 head 1회 (추론에서는 마지막 위치에만 적용)."""
-    return model.head.in_features * model.head.out_features
+    """예측을 한 번 읽는 비용: 분류 head (+ 있으면 정지 head). 추론에서는 마지막 위치에만 적용."""
+    total = model.head.in_features * model.head.out_features
+    stop_head = getattr(model, "stop_head", None)
+    if stop_head is not None:
+        total += stop_head.in_features * stop_head.out_features
+    return total
 
 
 def forward_flops(model: nn.Module, n_points: int) -> int:

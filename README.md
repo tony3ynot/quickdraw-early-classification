@@ -14,6 +14,11 @@
 | `qd/train.py` | 학습 (매 시점 분류 loss) |
 | `qd/evaluate.py` | 조기 예측 평가 (팀 공통 지표 4개) |
 | `qd/flops.py` | Mamba FLOPs 계산 |
+| `qd/dump.py` | 관찰 시점별 모델 출력 저장 (정지 정책을 재학습 없이 실험하기 위한 기반) |
+| `qd/policies.py` | 정지 정책 평가 도구 (Harmful Gap, ECE 등) |
+| `qd/optimal_stopping.py` | Deep Optimal Stopping 정지 정책 학습 |
+| `qd/stop_report.py` | 한 모델에서 정지 정책들을 비교하는 보고서 생성 |
+| `configs/mamba_20cls_elects.yaml` | ELECTS(정지 확률을 분류와 함께 학습) 설정 |
 | `tests/test_causality.py` | 모델이 미래의 점을 쓰지 않는지 검사 |
 | `scripts/` | VM 환경 설치, 학습+평가 실행 스크립트 |
 | `results/` | 실험 결과 요약 (작은 파일만) |
