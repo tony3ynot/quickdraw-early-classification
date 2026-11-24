@@ -49,7 +49,10 @@
       0.0601,
       0.038,
       0.1093
-    ]
+    ],
+    "points_recompute": 105.045,
+    "points_streaming": 28.3531,
+    "readouts": 5.0522
   },
   "selected": {
     "source": "valid",
@@ -90,7 +93,10 @@
             0.0,
             0.2686,
             0.7314
-          ]
+          ],
+          "points_recompute": 304.9064,
+          "points_streaming": 56.2142,
+          "readouts": 9.7271
         },
         {
           "cost": 0.02,
@@ -121,7 +127,10 @@
             0.577,
             0.3159,
             0.0621
-          ]
+          ],
+          "points_recompute": 233.5953,
+          "points_streaming": 48.9742,
+          "readouts": 8.3484
         },
         {
           "cost": 0.05,
@@ -152,7 +161,10 @@
             0.2479,
             0.1938,
             0.0493
-          ]
+          ],
+          "points_recompute": 203.9212,
+          "points_streaming": 45.4153,
+          "readouts": 7.7018
         },
         {
           "cost": 0.08,
@@ -183,7 +195,10 @@
             0.1357,
             0.1244,
             0.0453
-          ]
+          ],
+          "points_recompute": 171.5806,
+          "points_streaming": 41.1371,
+          "readouts": 6.9932
         },
         {
           "cost": 0.12,
@@ -214,7 +229,10 @@
             0.099,
             0.1008,
             0.0416
-          ]
+          ],
+          "points_recompute": 144.7478,
+          "points_streaming": 37.0236,
+          "readouts": 6.3054
         },
         {
           "cost": 0.16,
@@ -245,7 +263,10 @@
             0.099,
             0.0851,
             0.0384
-          ]
+          ],
+          "points_recompute": 136.6296,
+          "points_streaming": 35.8277,
+          "readouts": 6.1261
         },
         {
           "cost": 0.2,
@@ -276,7 +297,10 @@
             0.0889,
             0.0749,
             0.035
-          ]
+          ],
+          "points_recompute": 132.8324,
+          "points_streaming": 35.3218,
+          "readouts": 6.0346
         },
         {
           "cost": 0.22,
@@ -307,7 +331,10 @@
             0.0835,
             0.0699,
             0.0332
-          ]
+          ],
+          "points_recompute": 117.5894,
+          "points_streaming": 32.5531,
+          "readouts": 5.5985
         },
         {
           "cost": 0.24,
@@ -338,7 +365,10 @@
             0.0722,
             0.0692,
             0.0314
-          ]
+          ],
+          "points_recompute": 115.4337,
+          "points_streaming": 32.2386,
+          "readouts": 5.541
         },
         {
           "cost": 0.26,
@@ -369,7 +399,10 @@
             0.0685,
             0.0688,
             0.0305
-          ]
+          ],
+          "points_recompute": 113.3108,
+          "points_streaming": 31.8352,
+          "readouts": 5.4705
         },
         {
           "cost": 0.28,
@@ -400,7 +433,10 @@
             0.0671,
             0.0663,
             0.0291
-          ]
+          ],
+          "points_recompute": 111.121,
+          "points_streaming": 31.4596,
+          "readouts": 5.4047
         },
         {
           "cost": 0.3,
@@ -431,7 +467,10 @@
             0.0644,
             0.0631,
             0.0284
-          ]
+          ],
+          "points_recompute": 107.9084,
+          "points_streaming": 30.8834,
+          "readouts": 5.3161
         },
         {
           "cost": 0.32,
@@ -462,7 +501,10 @@
             0.0576,
             0.0583,
             0.026
-          ]
+          ],
+          "points_recompute": 98.5679,
+          "points_streaming": 28.932,
+          "readouts": 5.02
         },
         {
           "cost": 0.35,
@@ -493,7 +535,10 @@
             0.0549,
             0.0553,
             0.0246
-          ]
+          ],
+          "points_recompute": 95.3981,
+          "points_streaming": 28.3384,
+          "readouts": 4.9323
         },
         {
           "cost": 0.4,
@@ -524,7 +569,10 @@
             0.0457,
             0.0459,
             0.0196
-          ]
+          ],
+          "points_recompute": 89.3006,
+          "points_streaming": 27.4044,
+          "readouts": 4.7739
         },
         {
           "cost": 0.5,
@@ -555,7 +603,10 @@
             0.0421,
             0.0381,
             0.0
-          ]
+          ],
+          "points_recompute": 77.6128,
+          "points_streaming": 25.6126,
+          "readouts": 4.4828
         },
         {
           "cost": 0.7,
@@ -586,7 +637,10 @@
             0.0306,
             0.0191,
             0.0
-          ]
+          ],
+          "points_recompute": 58.4509,
+          "points_streaming": 21.339,
+          "readouts": 3.8194
         }
       ],
       "test_curve": [
@@ -619,7 +673,10 @@
             0.0,
             0.27412,
             0.72588
-          ]
+          ],
+          "points_recompute": 303.99764,
+          "points_streaming": 56.0593,
+          "readouts": 9.72206
         },
         {
           "cost": 0.02,
@@ -650,7 +707,10 @@
             0.57448,
             0.31328,
             0.06496
-          ]
+          ],
+          "points_recompute": 233.02058,
+          "points_streaming": 48.84602,
+          "readouts": 8.34744
         },
         {
           "cost": 0.05,
@@ -681,7 +741,10 @@
             0.2486,
             0.19568,
             0.0527
-          ]
+          ],
+          "points_recompute": 204.29482,
+          "points_streaming": 45.39548,
+          "readouts": 7.71246
         },
         {
           "cost": 0.08,
@@ -712,7 +775,10 @@
             0.1308,
             0.13234,
             0.04752
-          ]
+          ],
+          "points_recompute": 172.39674,
+          "points_streaming": 41.17552,
+          "readouts": 7.01486
         },
         {
           "cost": 0.12,
@@ -743,7 +809,10 @@
             0.0998,
             0.10708,
             0.0427
-          ]
+          ],
+          "points_recompute": 145.92506,
+          "points_streaming": 37.12198,
+          "readouts": 6.3333
         },
         {
           "cost": 0.16,
@@ -774,7 +843,10 @@
             0.10204,
             0.08776,
             0.03902
-          ]
+          ],
+          "points_recompute": 137.3127,
+          "points_streaming": 35.8633,
+          "readouts": 6.14336
         },
         {
           "cost": 0.2,
@@ -805,7 +877,10 @@
             0.09204,
             0.07712,
             0.0357
-          ]
+          ],
+          "points_recompute": 133.56638,
+          "points_streaming": 35.36578,
+          "readouts": 6.05026
         },
         {
           "cost": 0.22,
@@ -836,7 +911,10 @@
             0.0847,
             0.07266,
             0.0346
-          ]
+          ],
+          "points_recompute": 118.4252,
+          "points_streaming": 32.60688,
+          "readouts": 5.6202
         },
         {
           "cost": 0.24,
@@ -867,7 +945,10 @@
             0.07528,
             0.0709,
             0.03256
-          ]
+          ],
+          "points_recompute": 116.18134,
+          "points_streaming": 32.28222,
+          "readouts": 5.56302
         },
         {
           "cost": 0.26,
@@ -898,7 +979,10 @@
             0.0719,
             0.07006,
             0.03172
-          ]
+          ],
+          "points_recompute": 114.131,
+          "points_streaming": 31.89252,
+          "readouts": 5.4947
         },
         {
           "cost": 0.28,
@@ -929,7 +1013,10 @@
             0.06908,
             0.06752,
             0.03062
-          ]
+          ],
+          "points_recompute": 111.96436,
+          "points_streaming": 31.5271,
+          "readouts": 5.429
         },
         {
           "cost": 0.3,
@@ -960,7 +1047,10 @@
             0.0653,
             0.06414,
             0.02956
-          ]
+          ],
+          "points_recompute": 108.58568,
+          "points_streaming": 30.92672,
+          "readouts": 5.3341
         },
         {
           "cost": 0.32,
@@ -991,7 +1081,10 @@
             0.06038,
             0.0591,
             0.02694
-          ]
+          ],
+          "points_recompute": 99.08654,
+          "points_streaming": 28.96292,
+          "readouts": 5.04188
         },
         {
           "cost": 0.35,
@@ -1022,7 +1115,10 @@
             0.05906,
             0.05712,
             0.02452
-          ]
+          ],
+          "points_recompute": 96.0571,
+          "points_streaming": 28.40476,
+          "readouts": 4.95756
         },
         {
           "cost": 0.4,
@@ -1053,7 +1149,10 @@
             0.04788,
             0.04728,
             0.0209
-          ]
+          ],
+          "points_recompute": 90.27838,
+          "points_streaming": 27.50798,
+          "readouts": 4.80132
         },
         {
           "cost": 0.5,
@@ -1084,7 +1183,10 @@
             0.04474,
             0.03742,
             0.0
-          ]
+          ],
+          "points_recompute": 78.04934,
+          "points_streaming": 25.64596,
+          "readouts": 4.49954
         },
         {
           "cost": 0.7,
@@ -1115,7 +1217,10 @@
             0.0313,
             0.0187,
             0.0
-          ]
+          ],
+          "points_recompute": 58.94312,
+          "points_streaming": 21.38496,
+          "readouts": 3.8369
         }
       ],
       "select_earliness_at_baseline_accuracy": 0.4925345762711862
@@ -1153,7 +1258,10 @@
             0.0359,
             0.2619,
             0.6698
-          ]
+          ],
+          "points_recompute": 300.6636,
+          "points_streaming": 55.759,
+          "readouts": 9.5324
         },
         {
           "cost": 0.02,
@@ -1184,7 +1292,10 @@
             0.0591,
             0.6464,
             0.1824
-          ]
+          ],
+          "points_recompute": 260.6888,
+          "points_streaming": 51.7322,
+          "readouts": 8.7423
         },
         {
           "cost": 0.05,
@@ -1215,7 +1326,10 @@
             0.098,
             0.5991,
             0.0559
-          ]
+          ],
+          "points_recompute": 239.1322,
+          "points_streaming": 49.4037,
+          "readouts": 8.297
         },
         {
           "cost": 0.08,
@@ -1246,7 +1360,10 @@
             0.3603,
             0.4046,
             0.0398
-          ]
+          ],
+          "points_recompute": 223.885,
+          "points_streaming": 47.5122,
+          "readouts": 8.0185
         },
         {
           "cost": 0.12,
@@ -1277,7 +1394,10 @@
             0.4584,
             0.1576,
             0.0277
-          ]
+          ],
+          "points_recompute": 195.7718,
+          "points_streaming": 43.9866,
+          "readouts": 7.3671
         },
         {
           "cost": 0.16,
@@ -1308,7 +1428,10 @@
             0.1966,
             0.0843,
             0.0133
-          ]
+          ],
+          "points_recompute": 172.9182,
+          "points_streaming": 41.4479,
+          "readouts": 6.9806
         },
         {
           "cost": 0.2,
@@ -1339,7 +1462,10 @@
             0.1091,
             0.0745,
             0.0074
-          ]
+          ],
+          "points_recompute": 155.2862,
+          "points_streaming": 38.8639,
+          "readouts": 6.5372
         },
         {
           "cost": 0.22,
@@ -1370,7 +1496,10 @@
             0.1102,
             0.0743,
             0.0075
-          ]
+          ],
+          "points_recompute": 145.3942,
+          "points_streaming": 37.5077,
+          "readouts": 6.3555
         },
         {
           "cost": 0.24,
@@ -1401,7 +1530,10 @@
             0.0862,
             0.0472,
             0.0044
-          ]
+          ],
+          "points_recompute": 133.1275,
+          "points_streaming": 35.6028,
+          "readouts": 6.0454
         },
         {
           "cost": 0.26,
@@ -1432,7 +1564,10 @@
             0.0905,
             0.0409,
             0.0042
-          ]
+          ],
+          "points_recompute": 131.6404,
+          "points_streaming": 35.3423,
+          "readouts": 5.9481
         },
         {
           "cost": 0.28,
@@ -1463,7 +1598,10 @@
             0.0917,
             0.0319,
             0.0007
-          ]
+          ],
+          "points_recompute": 127.7769,
+          "points_streaming": 34.8216,
+          "readouts": 5.8988
         },
         {
           "cost": 0.3,
@@ -1494,7 +1632,10 @@
             0.1018,
             0.0289,
             0.0042
-          ]
+          ],
+          "points_recompute": 118.9196,
+          "points_streaming": 33.2715,
+          "readouts": 5.6816
         },
         {
           "cost": 0.32,
@@ -1525,7 +1666,10 @@
             0.0701,
             0.0327,
             0.0017
-          ]
+          ],
+          "points_recompute": 114.3344,
+          "points_streaming": 32.6432,
+          "readouts": 5.5642
         },
         {
           "cost": 0.35,
@@ -1556,7 +1700,10 @@
             0.06,
             0.0264,
             0.0018
-          ]
+          ],
+          "points_recompute": 104.2623,
+          "points_streaming": 30.9098,
+          "readouts": 5.3125
         },
         {
           "cost": 0.4,
@@ -1587,7 +1734,10 @@
             0.0582,
             0.0108,
             0.0007
-          ]
+          ],
+          "points_recompute": 98.6984,
+          "points_streaming": 30.053,
+          "readouts": 5.1609
         },
         {
           "cost": 0.5,
@@ -1618,7 +1768,10 @@
             0.0499,
             0.0054,
             0.0
-          ]
+          ],
+          "points_recompute": 84.8643,
+          "points_streaming": 27.6327,
+          "readouts": 4.7328
         },
         {
           "cost": 0.7,
@@ -1649,7 +1802,10 @@
             0.02,
             0.0017,
             0.0
-          ]
+          ],
+          "points_recompute": 63.9907,
+          "points_streaming": 23.2173,
+          "readouts": 4.0267
         }
       ],
       "test_curve": [
@@ -1682,7 +1838,10 @@
             0.0383,
             0.26256,
             0.66654
-          ]
+          ],
+          "points_recompute": 299.79184,
+          "points_streaming": 55.60552,
+          "readouts": 9.52664
         },
         {
           "cost": 0.02,
@@ -1713,7 +1872,10 @@
             0.06402,
             0.6339,
             0.18946
-          ]
+          ],
+          "points_recompute": 260.33224,
+          "points_streaming": 51.62426,
+          "readouts": 8.73458
         },
         {
           "cost": 0.05,
@@ -1744,7 +1906,10 @@
             0.10104,
             0.594,
             0.05866
-          ]
+          ],
+          "points_recompute": 238.56674,
+          "points_streaming": 49.27324,
+          "readouts": 8.29006
         },
         {
           "cost": 0.08,
@@ -1775,7 +1940,10 @@
             0.35484,
             0.401,
             0.04404
-          ]
+          ],
+          "points_recompute": 223.02462,
+          "points_streaming": 47.3345,
+          "readouts": 8.00704
         },
         {
           "cost": 0.12,
@@ -1806,7 +1974,10 @@
             0.4497,
             0.1621,
             0.02758
-          ]
+          ],
+          "points_recompute": 194.99628,
+          "points_streaming": 43.82954,
+          "readouts": 7.35472
         },
         {
           "cost": 0.16,
@@ -1837,7 +2008,10 @@
             0.19982,
             0.08672,
             0.01482
-          ]
+          ],
+          "points_recompute": 172.90888,
+          "points_streaming": 41.38608,
+          "readouts": 6.98544
         },
         {
           "cost": 0.2,
@@ -1868,7 +2042,10 @@
             0.11324,
             0.08026,
             0.00816
-          ]
+          ],
+          "points_recompute": 155.69536,
+          "points_streaming": 38.85066,
+          "readouts": 6.54594
         },
         {
           "cost": 0.22,
@@ -1899,7 +2076,10 @@
             0.1159,
             0.07948,
             0.00664
-          ]
+          ],
+          "points_recompute": 145.89634,
+          "points_streaming": 37.51766,
+          "readouts": 6.367
         },
         {
           "cost": 0.24,
@@ -1930,7 +2110,10 @@
             0.0888,
             0.05052,
             0.00432
-          ]
+          ],
+          "points_recompute": 133.48306,
+          "points_streaming": 35.59776,
+          "readouts": 6.06026
         },
         {
           "cost": 0.26,
@@ -1961,7 +2144,10 @@
             0.0919,
             0.04078,
             0.00374
-          ]
+          ],
+          "points_recompute": 131.45898,
+          "points_streaming": 35.27882,
+          "readouts": 5.94824
         },
         {
           "cost": 0.28,
@@ -1992,7 +2178,10 @@
             0.0941,
             0.03162,
             0.00048
-          ]
+          ],
+          "points_recompute": 126.94536,
+          "points_streaming": 34.6405,
+          "readouts": 5.88298
         },
         {
           "cost": 0.3,
@@ -2023,7 +2212,10 @@
             0.10428,
             0.02858,
             0.00292
-          ]
+          ],
+          "points_recompute": 118.35914,
+          "points_streaming": 33.13388,
+          "readouts": 5.67544
         },
         {
           "cost": 0.32,
@@ -2054,7 +2246,10 @@
             0.07418,
             0.03046,
             0.00154
-          ]
+          ],
+          "points_recompute": 113.8953,
+          "points_streaming": 32.55078,
+          "readouts": 5.5664
         },
         {
           "cost": 0.35,
@@ -2085,7 +2280,10 @@
             0.06122,
             0.0273,
             0.00188
-          ]
+          ],
+          "points_recompute": 104.28934,
+          "points_streaming": 30.84808,
+          "readouts": 5.32014
         },
         {
           "cost": 0.4,
@@ -2116,7 +2314,10 @@
             0.05802,
             0.0121,
             0.00074
-          ]
+          ],
+          "points_recompute": 99.14304,
+          "points_streaming": 30.08848,
+          "readouts": 5.18
         },
         {
           "cost": 0.5,
@@ -2147,7 +2348,10 @@
             0.05336,
             0.00522,
             0.0
-          ]
+          ],
+          "points_recompute": 85.3634,
+          "points_streaming": 27.66796,
+          "readouts": 4.75128
         },
         {
           "cost": 0.7,
@@ -2178,7 +2382,10 @@
             0.02118,
             0.00164,
             0.0
-          ]
+          ],
+          "points_recompute": 64.33856,
+          "points_streaming": 23.24754,
+          "readouts": 4.0339
         }
       ],
       "select_earliness_at_baseline_accuracy": 0.5471174999999997
@@ -2216,7 +2423,10 @@
             0.0,
             0.4607,
             0.5393
-          ]
+          ],
+          "points_recompute": 294.0173,
+          "points_streaming": 55.2108,
+          "readouts": 9.535
         },
         {
           "cost": 0.02,
@@ -2247,7 +2457,10 @@
             0.659,
             0.242,
             0.0552
-          ]
+          ],
+          "points_recompute": 228.8468,
+          "points_streaming": 48.4561,
+          "readouts": 8.2631
         },
         {
           "cost": 0.05,
@@ -2278,7 +2491,10 @@
             0.1858,
             0.1307,
             0.0478
-          ]
+          ],
+          "points_recompute": 186.0393,
+          "points_streaming": 43.1416,
+          "readouts": 7.3153
         },
         {
           "cost": 0.08,
@@ -2309,7 +2525,10 @@
             0.1151,
             0.0902,
             0.0412
-          ]
+          ],
+          "points_recompute": 162.5481,
+          "points_streaming": 39.9903,
+          "readouts": 6.828
         },
         {
           "cost": 0.12,
@@ -2340,7 +2559,10 @@
             0.0819,
             0.0851,
             0.0335
-          ]
+          ],
+          "points_recompute": 135.109,
+          "points_streaming": 35.6875,
+          "readouts": 6.1522
         },
         {
           "cost": 0.16,
@@ -2371,7 +2593,10 @@
             0.0859,
             0.0712,
             0.0292
-          ]
+          ],
+          "points_recompute": 130.8027,
+          "points_streaming": 35.0755,
+          "readouts": 6.0206
         },
         {
           "cost": 0.2,
@@ -2402,7 +2627,10 @@
             0.0812,
             0.0633,
             0.0266
-          ]
+          ],
+          "points_recompute": 126.9669,
+          "points_streaming": 34.544,
+          "readouts": 5.931
         },
         {
           "cost": 0.22,
@@ -2433,7 +2661,10 @@
             0.0809,
             0.0613,
             0.0247
-          ]
+          ],
+          "points_recompute": 125.0587,
+          "points_streaming": 34.239,
+          "readouts": 5.8583
         },
         {
           "cost": 0.24,
@@ -2464,7 +2695,10 @@
             0.0736,
             0.0552,
             0.0223
-          ]
+          ],
+          "points_recompute": 109.5159,
+          "points_streaming": 31.3872,
+          "readouts": 5.4109
         },
         {
           "cost": 0.26,
@@ -2495,7 +2729,10 @@
             0.0739,
             0.0511,
             0.0213
-          ]
+          ],
+          "points_recompute": 107.4812,
+          "points_streaming": 31.0694,
+          "readouts": 5.3601
         },
         {
           "cost": 0.28,
@@ -2526,7 +2763,10 @@
             0.0711,
             0.0515,
             0.019
-          ]
+          ],
+          "points_recompute": 105.268,
+          "points_streaming": 30.6526,
+          "readouts": 5.296
         },
         {
           "cost": 0.3,
@@ -2557,7 +2797,10 @@
             0.0643,
             0.061,
             0.0
-          ]
+          ],
+          "points_recompute": 91.7835,
+          "points_streaming": 27.9223,
+          "readouts": 4.8952
         },
         {
           "cost": 0.32,
@@ -2588,7 +2831,10 @@
             0.0629,
             0.0565,
             0.0
-          ]
+          ],
+          "points_recompute": 89.886,
+          "points_streaming": 27.6159,
+          "readouts": 4.8359
         },
         {
           "cost": 0.35,
@@ -2619,7 +2865,10 @@
             0.0609,
             0.0532,
             0.0
-          ]
+          ],
+          "points_recompute": 87.9432,
+          "points_streaming": 27.2969,
+          "readouts": 4.7858
         },
         {
           "cost": 0.4,
@@ -2650,7 +2899,10 @@
             0.0565,
             0.0472,
             0.0
-          ]
+          ],
+          "points_recompute": 84.8806,
+          "points_streaming": 26.7721,
+          "readouts": 4.6922
         },
         {
           "cost": 0.5,
@@ -2681,7 +2933,10 @@
             0.0472,
             0.0388,
             0.0
-          ]
+          ],
+          "points_recompute": 77.6786,
+          "points_streaming": 25.5057,
+          "readouts": 4.4843
         },
         {
           "cost": 0.7,
@@ -2712,7 +2967,10 @@
             0.053,
             0.0,
             0.0
-          ]
+          ],
+          "points_recompute": 58.1553,
+          "points_streaming": 21.343,
+          "readouts": 3.8167
         }
       ],
       "test_curve": [
@@ -2745,7 +3003,10 @@
             0.0,
             0.46056,
             0.53944
-          ]
+          ],
+          "points_recompute": 293.49212,
+          "points_streaming": 55.09166,
+          "readouts": 9.53562
         },
         {
           "cost": 0.02,
@@ -2776,7 +3037,10 @@
             0.65284,
             0.24406,
             0.05684
-          ]
+          ],
+          "points_recompute": 228.46434,
+          "points_streaming": 48.35332,
+          "readouts": 8.264
         },
         {
           "cost": 0.05,
@@ -2807,7 +3071,10 @@
             0.18214,
             0.13612,
             0.04922
-          ]
+          ],
+          "points_recompute": 186.4215,
+          "points_streaming": 43.12984,
+          "readouts": 7.32912
         },
         {
           "cost": 0.08,
@@ -2838,7 +3105,10 @@
             0.1144,
             0.09758,
             0.04274
-          ]
+          ],
+          "points_recompute": 163.1954,
+          "points_streaming": 40.00396,
+          "readouts": 6.8476
         },
         {
           "cost": 0.12,
@@ -2869,7 +3139,10 @@
             0.08256,
             0.09024,
             0.03356
-          ]
+          ],
+          "points_recompute": 136.10488,
+          "points_streaming": 35.77542,
+          "readouts": 6.18048
         },
         {
           "cost": 0.16,
@@ -2900,7 +3173,10 @@
             0.08738,
             0.07408,
             0.03002
-          ]
+          ],
+          "points_recompute": 131.68782,
+          "points_streaming": 35.15156,
+          "readouts": 6.04606
         },
         {
           "cost": 0.2,
@@ -2931,7 +3207,10 @@
             0.08404,
             0.06364,
             0.02736
-          ]
+          ],
+          "points_recompute": 127.55918,
+          "points_streaming": 34.5823,
+          "readouts": 5.94934
         },
         {
           "cost": 0.22,
@@ -2962,7 +3241,10 @@
             0.08442,
             0.06086,
             0.02548
-          ]
+          ],
+          "points_recompute": 125.59422,
+          "points_streaming": 34.26824,
+          "readouts": 5.87358
         },
         {
           "cost": 0.24,
@@ -2993,7 +3275,10 @@
             0.07836,
             0.05376,
             0.02276
-          ]
+          ],
+          "points_recompute": 109.84686,
+          "points_streaming": 31.39052,
+          "readouts": 5.42734
         },
         {
           "cost": 0.26,
@@ -3024,7 +3309,10 @@
             0.07772,
             0.0496,
             0.0215
-          ]
+          ],
+          "points_recompute": 107.78876,
+          "points_streaming": 31.07434,
+          "readouts": 5.37682
         },
         {
           "cost": 0.28,
@@ -3055,7 +3343,10 @@
             0.07394,
             0.04998,
             0.01924
-          ]
+          ],
+          "points_recompute": 105.54278,
+          "points_streaming": 30.6566,
+          "readouts": 5.31332
         },
         {
           "cost": 0.3,
@@ -3086,7 +3377,10 @@
             0.06778,
             0.06122,
             0.0
-          ]
+          ],
+          "points_recompute": 92.51626,
+          "points_streaming": 28.01336,
+          "readouts": 4.92546
         },
         {
           "cost": 0.32,
@@ -3117,7 +3411,10 @@
             0.06488,
             0.05746,
             0.0
-          ]
+          ],
+          "points_recompute": 90.73552,
+          "points_streaming": 27.72046,
+          "readouts": 4.86596
         },
         {
           "cost": 0.35,
@@ -3148,7 +3445,10 @@
             0.06416,
             0.0524,
             0.0
-          ]
+          ],
+          "points_recompute": 88.55596,
+          "points_streaming": 27.37102,
+          "readouts": 4.81176
         },
         {
           "cost": 0.4,
@@ -3179,7 +3479,10 @@
             0.06002,
             0.04668,
             0.0
-          ]
+          ],
+          "points_recompute": 85.57182,
+          "points_streaming": 26.85062,
+          "readouts": 4.7176
         },
         {
           "cost": 0.5,
@@ -3210,7 +3513,10 @@
             0.04866,
             0.03712,
             0.0
-          ]
+          ],
+          "points_recompute": 78.38788,
+          "points_streaming": 25.6147,
+          "readouts": 4.51362
         },
         {
           "cost": 0.7,
@@ -3241,7 +3547,10 @@
             0.05126,
             0.0,
             0.0
-          ]
+          ],
+          "points_recompute": 58.64,
+          "points_streaming": 21.38856,
+          "readouts": 3.82908
         }
       ],
       "select_earliness_at_baseline_accuracy": 0.49674096774193544
@@ -3279,7 +3588,10 @@
             0.043,
             0.1944,
             0.7626
-          ]
+          ],
+          "points_recompute": 306.3346,
+          "points_streaming": 56.3228,
+          "readouts": 9.7155
         },
         {
           "cost": 0.02,
@@ -3310,7 +3622,10 @@
             0.1551,
             0.4633,
             0.2925
-          ]
+          ],
+          "points_recompute": 264.364,
+          "points_streaming": 52.1084,
+          "readouts": 8.8856
         },
         {
           "cost": 0.05,
@@ -3341,7 +3656,10 @@
             0.4928,
             0.2839,
             0.0589
-          ]
+          ],
+          "points_recompute": 223.8355,
+          "points_streaming": 47.7718,
+          "readouts": 8.1095
         },
         {
           "cost": 0.08,
@@ -3372,7 +3690,10 @@
             0.5287,
             0.1421,
             0.0341
-          ]
+          ],
+          "points_recompute": 206.7052,
+          "points_streaming": 45.7472,
+          "readouts": 7.7284
         },
         {
           "cost": 0.12,
@@ -3403,7 +3724,10 @@
             0.2707,
             0.1072,
             0.0159
-          ]
+          ],
+          "points_recompute": 186.3142,
+          "points_streaming": 43.298,
+          "readouts": 7.324
         },
         {
           "cost": 0.16,
@@ -3434,7 +3758,10 @@
             0.1265,
             0.0598,
             0.0033
-          ]
+          ],
+          "points_recompute": 149.2453,
+          "points_streaming": 38.2482,
+          "readouts": 6.5185
         },
         {
           "cost": 0.2,
@@ -3465,7 +3792,10 @@
             0.0871,
             0.0807,
             0.0
-          ]
+          ],
+          "points_recompute": 146.2386,
+          "points_streaming": 37.8954,
+          "readouts": 6.4384
         },
         {
           "cost": 0.22,
@@ -3496,7 +3826,10 @@
             0.1056,
             0.0446,
             0.0
-          ]
+          ],
+          "points_recompute": 142.0106,
+          "points_streaming": 37.2807,
+          "readouts": 6.3384
         },
         {
           "cost": 0.24,
@@ -3527,7 +3860,10 @@
             0.0701,
             0.0619,
             0.0
-          ]
+          ],
+          "points_recompute": 136.5264,
+          "points_streaming": 36.3342,
+          "readouts": 6.2265
         },
         {
           "cost": 0.26,
@@ -3558,7 +3894,10 @@
             0.0854,
             0.026,
             0.0
-          ]
+          ],
+          "points_recompute": 116.9231,
+          "points_streaming": 33.2962,
+          "readouts": 5.6954
         },
         {
           "cost": 0.28,
@@ -3589,7 +3928,10 @@
             0.0887,
             0.0265,
             0.0
-          ]
+          ],
+          "points_recompute": 114.4833,
+          "points_streaming": 32.8917,
+          "readouts": 5.6307
         },
         {
           "cost": 0.3,
@@ -3620,7 +3962,10 @@
             0.0847,
             0.0187,
             0.0
-          ]
+          ],
+          "points_recompute": 109.7533,
+          "points_streaming": 32.1275,
+          "readouts": 5.503
         },
         {
           "cost": 0.32,
@@ -3651,7 +3996,10 @@
             0.0848,
             0.0138,
             0.0
-          ]
+          ],
+          "points_recompute": 109.0703,
+          "points_streaming": 32.0527,
+          "readouts": 5.4944
         },
         {
           "cost": 0.35,
@@ -3682,7 +4030,10 @@
             0.0699,
             0.0124,
             0.0
-          ]
+          ],
+          "points_recompute": 103.893,
+          "points_streaming": 31.082,
+          "readouts": 5.3344
         },
         {
           "cost": 0.4,
@@ -3713,7 +4064,10 @@
             0.0703,
             0.0142,
             0.0
-          ]
+          ],
+          "points_recompute": 90.1912,
+          "points_streaming": 28.5178,
+          "readouts": 4.9133
         },
         {
           "cost": 0.5,
@@ -3744,7 +4098,10 @@
             0.055,
             0.0037,
             0.0
-          ]
+          ],
+          "points_recompute": 81.3306,
+          "points_streaming": 26.8405,
+          "readouts": 4.6496
         },
         {
           "cost": 0.7,
@@ -3775,7 +4132,10 @@
             0.0309,
             0.0,
             0.0
-          ]
+          ],
+          "points_recompute": 62.3903,
+          "points_streaming": 22.8553,
+          "readouts": 3.993
         }
       ],
       "test_curve": [
@@ -3808,7 +4168,10 @@
             0.04342,
             0.19544,
             0.76114
-          ]
+          ],
+          "points_recompute": 305.48186,
+          "points_streaming": 56.17306,
+          "readouts": 9.71394
         },
         {
           "cost": 0.02,
@@ -3839,7 +4202,10 @@
             0.15164,
             0.4604,
             0.2957
-          ]
+          ],
+          "points_recompute": 263.6095,
+          "points_streaming": 51.96092,
+          "readouts": 8.88194
         },
         {
           "cost": 0.05,
@@ -3870,7 +4236,10 @@
             0.48898,
             0.28236,
             0.06098
-          ]
+          ],
+          "points_recompute": 223.16924,
+          "points_streaming": 47.635,
+          "readouts": 8.1036
         },
         {
           "cost": 0.08,
@@ -3901,7 +4270,10 @@
             0.51768,
             0.14906,
             0.03408
-          ]
+          ],
+          "points_recompute": 206.2579,
+          "points_streaming": 45.6319,
+          "readouts": 7.72224
         },
         {
           "cost": 0.12,
@@ -3932,7 +4304,10 @@
             0.26892,
             0.1116,
             0.01696
-          ]
+          ],
+          "points_recompute": 186.35634,
+          "points_streaming": 43.24182,
+          "readouts": 7.32626
         },
         {
           "cost": 0.16,
@@ -3963,7 +4338,10 @@
             0.1288,
             0.06094,
             0.00372
-          ]
+          ],
+          "points_recompute": 148.78268,
+          "points_streaming": 38.12746,
+          "readouts": 6.51316
         },
         {
           "cost": 0.2,
@@ -3994,7 +4372,10 @@
             0.08574,
             0.08498,
             0.0
-          ]
+          ],
+          "points_recompute": 146.64396,
+          "points_streaming": 37.89314,
+          "readouts": 6.44614
         },
         {
           "cost": 0.22,
@@ -4025,7 +4406,10 @@
             0.10978,
             0.04464,
             0.0
-          ]
+          ],
+          "points_recompute": 141.98584,
+          "points_streaming": 37.22458,
+          "readouts": 6.34062
         },
         {
           "cost": 0.24,
@@ -4056,7 +4440,10 @@
             0.0712,
             0.06242,
             0.0
-          ]
+          ],
+          "points_recompute": 136.26892,
+          "points_streaming": 36.23462,
+          "readouts": 6.22442
         },
         {
           "cost": 0.26,
@@ -4087,7 +4474,10 @@
             0.08832,
             0.02606,
             0.0
-          ]
+          ],
+          "points_recompute": 117.3501,
+          "points_streaming": 33.31114,
+          "readouts": 5.70492
         },
         {
           "cost": 0.28,
@@ -4118,7 +4508,10 @@
             0.09068,
             0.0268,
             0.0
-          ]
+          ],
+          "points_recompute": 114.80816,
+          "points_streaming": 32.8914,
+          "readouts": 5.6378
         },
         {
           "cost": 0.3,
@@ -4149,7 +4542,10 @@
             0.08784,
             0.0192,
             0.0
-          ]
+          ],
+          "points_recompute": 110.16424,
+          "points_streaming": 32.13708,
+          "readouts": 5.5136
         },
         {
           "cost": 0.32,
@@ -4180,7 +4576,10 @@
             0.08894,
             0.0128,
             0.0
-          ]
+          ],
+          "points_recompute": 109.22384,
+          "points_streaming": 32.02782,
+          "readouts": 5.49894
         },
         {
           "cost": 0.35,
@@ -4211,7 +4610,10 @@
             0.07316,
             0.01166,
             0.0
-          ]
+          ],
+          "points_recompute": 104.08712,
+          "points_streaming": 31.05784,
+          "readouts": 5.34358
         },
         {
           "cost": 0.4,
@@ -4242,7 +4644,10 @@
             0.0729,
             0.01276,
             0.0
-          ]
+          ],
+          "points_recompute": 90.50548,
+          "points_streaming": 28.52976,
+          "readouts": 4.927
         },
         {
           "cost": 0.5,
@@ -4273,7 +4678,10 @@
             0.05612,
             0.00348,
             0.0
-          ]
+          ],
+          "points_recompute": 81.67654,
+          "points_streaming": 26.83148,
+          "readouts": 4.65986
         },
         {
           "cost": 0.7,
@@ -4304,7 +4712,10 @@
             0.03074,
             0.0,
             0.0
-          ]
+          ],
+          "points_recompute": 62.90174,
+          "points_streaming": 22.9281,
+          "readouts": 4.00706
         }
       ],
       "select_earliness_at_baseline_accuracy": 0.5511044444444443
@@ -4340,7 +4751,10 @@
         0.0608,
         0.03972,
         0.116
-      ]
+      ],
+      "points_recompute": 107.27118,
+      "points_streaming": 28.62868,
+      "readouts": 5.11424
     },
     "dos_matched": {
       "cost": 0.35,
@@ -4371,7 +4785,10 @@
         0.05906,
         0.05712,
         0.02452
-      ]
+      ],
+      "points_recompute": 96.0571,
+      "points_streaming": 28.40476,
+      "readouts": 4.95756
     },
     "tuned_fixed": {
       "threshold": 0.9,
@@ -4402,7 +4819,10 @@
         0.0608,
         0.03972,
         0.116
-      ]
+      ],
+      "points_recompute": 107.27118,
+      "points_streaming": 28.62868,
+      "readouts": 5.11424
     },
     "dos_curve": [
       {
@@ -4434,7 +4854,10 @@
           0.0,
           0.27412,
           0.72588
-        ]
+        ],
+        "points_recompute": 303.99764,
+        "points_streaming": 56.0593,
+        "readouts": 9.72206
       },
       {
         "cost": 0.02,
@@ -4465,7 +4888,10 @@
           0.57448,
           0.31328,
           0.06496
-        ]
+        ],
+        "points_recompute": 233.02058,
+        "points_streaming": 48.84602,
+        "readouts": 8.34744
       },
       {
         "cost": 0.05,
@@ -4496,7 +4922,10 @@
           0.2486,
           0.19568,
           0.0527
-        ]
+        ],
+        "points_recompute": 204.29482,
+        "points_streaming": 45.39548,
+        "readouts": 7.71246
       },
       {
         "cost": 0.08,
@@ -4527,7 +4956,10 @@
           0.1308,
           0.13234,
           0.04752
-        ]
+        ],
+        "points_recompute": 172.39674,
+        "points_streaming": 41.17552,
+        "readouts": 7.01486
       },
       {
         "cost": 0.12,
@@ -4558,7 +4990,10 @@
           0.0998,
           0.10708,
           0.0427
-        ]
+        ],
+        "points_recompute": 145.92506,
+        "points_streaming": 37.12198,
+        "readouts": 6.3333
       },
       {
         "cost": 0.16,
@@ -4589,7 +5024,10 @@
           0.10204,
           0.08776,
           0.03902
-        ]
+        ],
+        "points_recompute": 137.3127,
+        "points_streaming": 35.8633,
+        "readouts": 6.14336
       },
       {
         "cost": 0.2,
@@ -4620,7 +5058,10 @@
           0.09204,
           0.07712,
           0.0357
-        ]
+        ],
+        "points_recompute": 133.56638,
+        "points_streaming": 35.36578,
+        "readouts": 6.05026
       },
       {
         "cost": 0.22,
@@ -4651,7 +5092,10 @@
           0.0847,
           0.07266,
           0.0346
-        ]
+        ],
+        "points_recompute": 118.4252,
+        "points_streaming": 32.60688,
+        "readouts": 5.6202
       },
       {
         "cost": 0.24,
@@ -4682,7 +5126,10 @@
           0.07528,
           0.0709,
           0.03256
-        ]
+        ],
+        "points_recompute": 116.18134,
+        "points_streaming": 32.28222,
+        "readouts": 5.56302
       },
       {
         "cost": 0.26,
@@ -4713,7 +5160,10 @@
           0.0719,
           0.07006,
           0.03172
-        ]
+        ],
+        "points_recompute": 114.131,
+        "points_streaming": 31.89252,
+        "readouts": 5.4947
       },
       {
         "cost": 0.28,
@@ -4744,7 +5194,10 @@
           0.06908,
           0.06752,
           0.03062
-        ]
+        ],
+        "points_recompute": 111.96436,
+        "points_streaming": 31.5271,
+        "readouts": 5.429
       },
       {
         "cost": 0.3,
@@ -4775,7 +5228,10 @@
           0.0653,
           0.06414,
           0.02956
-        ]
+        ],
+        "points_recompute": 108.58568,
+        "points_streaming": 30.92672,
+        "readouts": 5.3341
       },
       {
         "cost": 0.32,
@@ -4806,7 +5262,10 @@
           0.06038,
           0.0591,
           0.02694
-        ]
+        ],
+        "points_recompute": 99.08654,
+        "points_streaming": 28.96292,
+        "readouts": 5.04188
       },
       {
         "cost": 0.35,
@@ -4837,7 +5296,10 @@
           0.05906,
           0.05712,
           0.02452
-        ]
+        ],
+        "points_recompute": 96.0571,
+        "points_streaming": 28.40476,
+        "readouts": 4.95756
       },
       {
         "cost": 0.4,
@@ -4868,7 +5330,10 @@
           0.04788,
           0.04728,
           0.0209
-        ]
+        ],
+        "points_recompute": 90.27838,
+        "points_streaming": 27.50798,
+        "readouts": 4.80132
       },
       {
         "cost": 0.5,
@@ -4899,7 +5364,10 @@
           0.04474,
           0.03742,
           0.0
-        ]
+        ],
+        "points_recompute": 78.04934,
+        "points_streaming": 25.64596,
+        "readouts": 4.49954
       },
       {
         "cost": 0.7,
@@ -4930,7 +5398,10 @@
           0.0313,
           0.0187,
           0.0
-        ]
+        ],
+        "points_recompute": 58.94312,
+        "points_streaming": 21.38496,
+        "readouts": 3.8369
       }
     ],
     "fixed_curve": [
@@ -4963,7 +5434,10 @@
           0.00862,
           0.00376,
           0.00194
-        ]
+        ],
+        "points_recompute": 29.92472,
+        "points_streaming": 14.0373,
+        "readouts": 2.59804
       },
       {
         "threshold": 0.6,
@@ -4994,7 +5468,10 @@
           0.01584,
           0.00816,
           0.0076
-        ]
+        ],
+        "points_recompute": 40.8544,
+        "points_streaming": 16.6184,
+        "readouts": 3.07102
       },
       {
         "threshold": 0.7,
@@ -5025,7 +5502,10 @@
           0.02778,
           0.01516,
           0.02134
-        ]
+        ],
+        "points_recompute": 54.93558,
+        "points_streaming": 19.52184,
+        "readouts": 3.58634
       },
       {
         "threshold": 0.75,
@@ -5056,7 +5536,10 @@
           0.0354,
           0.0197,
           0.0332
-        ]
+        ],
+        "points_recompute": 63.9447,
+        "points_streaming": 21.22862,
+        "readouts": 3.88094
       },
       {
         "threshold": 0.8,
@@ -5087,7 +5570,10 @@
           0.04256,
           0.02524,
           0.05096
-        ]
+        ],
+        "points_recompute": 75.00414,
+        "points_streaming": 23.214,
+        "readouts": 4.215
       },
       {
         "threshold": 0.85,
@@ -5118,7 +5604,10 @@
           0.05046,
           0.03136,
           0.077
-        ]
+        ],
+        "points_recompute": 88.81258,
+        "points_streaming": 25.587,
+        "readouts": 4.60818
       },
       {
         "threshold": 0.9,
@@ -5149,7 +5638,10 @@
           0.0608,
           0.03972,
           0.116
-        ]
+        ],
+        "points_recompute": 107.27118,
+        "points_streaming": 28.62868,
+        "readouts": 5.11424
       },
       {
         "threshold": 0.925,
@@ -5180,7 +5672,10 @@
           0.06502,
           0.0438,
           0.14594
-        ]
+        ],
+        "points_recompute": 119.04048,
+        "points_streaming": 30.48142,
+        "readouts": 5.42636
       },
       {
         "threshold": 0.95,
@@ -5211,7 +5706,10 @@
           0.07058,
           0.05028,
           0.18672
-        ]
+        ],
+        "points_recompute": 135.07002,
+        "points_streaming": 32.9767,
+        "readouts": 5.83854
       },
       {
         "threshold": 0.97,
@@ -5242,7 +5740,10 @@
           0.0765,
           0.05564,
           0.24366
-        ]
+        ],
+        "points_recompute": 154.57578,
+        "points_streaming": 35.89822,
+        "readouts": 6.3245
       },
       {
         "threshold": 0.98,
@@ -5273,7 +5774,10 @@
           0.0787,
           0.05882,
           0.29062
-        ]
+        ],
+        "points_recompute": 169.18514,
+        "points_streaming": 38.01762,
+        "readouts": 6.6818
       },
       {
         "threshold": 0.99,
@@ -5304,7 +5808,10 @@
           0.07934,
           0.0627,
           0.37594
-        ]
+        ],
+        "points_recompute": 193.18564,
+        "points_streaming": 41.38068,
+        "readouts": 7.24752
       },
       {
         "threshold": 0.995,
@@ -5335,7 +5842,10 @@
           0.0737,
           0.06118,
           0.46334
-        ]
+        ],
+        "points_recompute": 215.03048,
+        "points_streaming": 44.3674,
+        "readouts": 7.75572
       }
     ],
     "same_accuracy": [

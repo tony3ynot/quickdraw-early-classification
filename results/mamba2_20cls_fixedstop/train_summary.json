@@ -1,0 +1,17 @@
+{
+  "run_name": "mamba2_20cls_fixedstop",
+  "completed": true,
+  "epochs_done": 30,
+  "steps_done": 82020,
+  "train_seconds": 10735.4,
+  "val_seconds": 94.9,
+  "train_hours": 2.982,
+  "best_epoch": 28,
+  "best_val_mean_acc": 0.8041,
+  "n_params": 883220,
+  "gpu": "NVIDIA L4",
+  "peak_gpu_memory_gb": 4.89,
+  "n_train": 1400000,
+  "n_valid": 50000,
+  "torch": "2.8.0+cu128"
+}

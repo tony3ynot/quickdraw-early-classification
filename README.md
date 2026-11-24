@@ -96,6 +96,22 @@ test 50,000개 전체, batch size 1, NVIDIA L4. 전체 수치는 [results/mamba2
 - 상태 유지의 지연 시간은 mamba-ssm이 점 단위 `step`만 제공해서 생긴 값이다. 관찰 시점마다 새 점을 묶어 처리하도록 구현하면 줄어들 수 있으나 아직 구현하지 않았다.
 - 가장 어려운 클래스는 dog(75.4%)이고, table·clock·dog은 예측 확정이 늦다(관찰 비율 67~71%).
 
+## 결과: Deep Optimal Stopping과 ELECTS
+
+baseline Mamba에 두 알고리즘을 적용한 결과다. 전체 내용은 [results/mamba_algorithms.md](results/mamba_algorithms.md)에 있다.
+
+| 분류 모델 | 정지 정책 | Stopping Accuracy | Mean Earliness | 최대 누적 조건부 Harmful Gap |
+|---|---|---|---|---|
+| Baseline | 0.9 고정 | 92.55% | 51.2% | 5.70% |
+| Baseline | Deep Optimal Stopping | 92.51% | 49.6% | 3.41% |
+| ELECTS | 0.9 고정 | 92.19% | 48.3% | 7.35% |
+| ELECTS | 정지 head | 93.26% | 55.8% | 5.22% |
+| ELECTS | Deep Optimal Stopping | 92.50% | 48.1% | 4.22% |
+
+- Deep Optimal Stopping은 분류 모델을 그대로 두고, 같은 정확도에서 1.6%p 일찍 멈춘다.
+- ELECTS는 분류 모델을 개선했지만(같은 정확도에서 1.7~7.1%p 일찍 정지), 학습된 정지 head는 고정 threshold보다 못했다.
+- ELECTS의 정지 확률을 평균값으로 고정한 비교 실험에서 이득의 2/3 이상이 재현됐다. 효과의 대부분은 관찰 시점에 loss 비중을 더 준 데서 온다.
+
 ## 실행 방법
 
 모든 명령은 VM에 SSH로 접속한 뒤 레포 루트에서 입력한다.

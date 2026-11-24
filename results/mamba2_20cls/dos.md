@@ -1,6 +1,6 @@
 # mamba2_20cls: Deep Optimal Stopping 결과
 
-분류 모델(baseline Mamba)은 그대로 두고 정지 정책만 바꿨다. 원 논문: Becker, Cheridito, Jentzen, *Deep Optimal Stopping*, JMLR 2019.
+분류 모델은 그대로 두고 정지 정책만 바꿨다. 원 논문: Becker, Cheridito, Jentzen, *Deep Optimal Stopping*, JMLR 2019.
 
 ## 조건
 - 정책 학습 데이터: valid (40,000개), 설정 선택: valid 중 따로 뗀 10,000개, 최종 보고: test 50,000개
@@ -9,11 +9,11 @@
 - 설정(입력 종류, 학습 데이터)은 선택용 데이터에서 '0.9 고정과 같은 정확도일 때의 Mean Earliness'가 가장 낮은 것으로 골랐다. test는 선택에 쓰지 않았다.
 
 ## test 결과
-| 정지 정책 | Stopping Accuracy | Mean Earliness | Harmful Gap | 최대 누적 조건부 Harmful Gap |
-|---|---|---|---|---|
-| 0.9 고정 (baseline) | 92.55% | 51.2% | 2.72% | 5.70% |
-| Deep Optimal Stopping (cost 0.35) | 92.51% | 49.6% | 3.33% | 3.41% |
-| 고정 threshold 0.9 (선택용 데이터에서 DOS와 정확도를 맞춤) | 92.55% | 51.2% | 2.72% | 5.70% |
+| 정지 정책 | Stopping Accuracy | Mean Earliness | Harmful Gap | 최대 누적 조건부 Harmful Gap | 계산한 점 (재추론) | 계산한 점 (상태 유지) | 예측 횟수 |
+|---|---|---|---|---|---|---|---|
+| 0.9 고정 (baseline) | 92.55% | 51.2% | 2.72% | 5.70% | 107.3 | 28.6 | 5.11 |
+| Deep Optimal Stopping (cost 0.35) | 92.51% | 49.6% | 3.33% | 3.41% | 96.1 | 28.4 | 4.96 |
+| 고정 threshold 0.9 (선택용 데이터에서 DOS와 정확도를 맞춤) | 92.55% | 51.2% | 2.72% | 5.70% | 107.3 | 28.6 | 5.11 |
 
 같은 정확도에서의 Mean Earliness (test 곡선을 선형 보간, 탐색적 비교):
 

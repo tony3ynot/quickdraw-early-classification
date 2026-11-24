@@ -1,11 +1,11 @@
 # mamba2_20cls_elects_ft_a0.7: 정지 정책 비교 (test 50,000개)
 
 ## 주요 조건
-| 분류 모델 / 정지 정책 | Stopping Accuracy | Mean Earliness | Harmful Gap | 최대 누적 조건부 Harmful Gap |
-|---|---|---|---|---|
-| mamba2_20cls / 0.9 고정 | 92.55% | 51.2% | 2.72% | 5.70% |
-| mamba2_20cls_elects_ft_a0.7 / 0.9 고정 | 92.88% | 50.0% | 3.42% | 6.23% |
-| mamba2_20cls_elects_ft_a0.7 / 정지 확률 ≥ 0.5 | 95.11% | 73.2% | 1.18% | 2.93% |
+| 분류 모델 / 정지 정책 | Stopping Accuracy | Mean Earliness | Harmful Gap | 최대 누적 조건부 Harmful Gap | 계산한 점 (재추론) | 계산한 점 (상태 유지) | 예측 횟수 |
+|---|---|---|---|---|---|---|---|
+| mamba2_20cls / 0.9 고정 | 92.55% | 51.2% | 2.72% | 5.70% | 107.3 | 28.6 | 5.11 |
+| mamba2_20cls_elects_ft_a0.7 / 0.9 고정 | 92.88% | 50.0% | 3.42% | 6.23% | 103.1 | 28.1 | 5.00 |
+| mamba2_20cls_elects_ft_a0.7 / 정지 확률 ≥ 0.5 | 95.11% | 73.2% | 1.18% | 2.93% | 188.3 | 40.9 | 7.31 |
 
 ## 같은 정확도에서의 Mean Earliness (곡선을 선형 보간)
 | 목표 Stopping Accuracy | mamba2_20cls 고정 threshold | mamba2_20cls_elects_ft_a0.7 고정 threshold | mamba2_20cls_elects_ft_a0.7 정지 head |

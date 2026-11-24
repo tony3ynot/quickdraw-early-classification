@@ -1,11 +1,11 @@
 # mamba2_20cls_elects: 정지 정책 비교 (test 50,000개)
 
 ## 주요 조건
-| 분류 모델 / 정지 정책 | Stopping Accuracy | Mean Earliness | Harmful Gap | 최대 누적 조건부 Harmful Gap |
-|---|---|---|---|---|
-| mamba2_20cls / 0.9 고정 | 92.55% | 51.2% | 2.72% | 5.70% |
-| mamba2_20cls_elects / 0.9 고정 | 92.19% | 48.3% | 3.92% | 7.35% |
-| mamba2_20cls_elects / 정지 확률 ≥ 0.5 | 93.26% | 55.8% | 3.14% | 5.22% |
+| 분류 모델 / 정지 정책 | Stopping Accuracy | Mean Earliness | Harmful Gap | 최대 누적 조건부 Harmful Gap | 계산한 점 (재추론) | 계산한 점 (상태 유지) | 예측 횟수 |
+|---|---|---|---|---|---|---|---|
+| mamba2_20cls / 0.9 고정 | 92.55% | 51.2% | 2.72% | 5.70% | 107.3 | 28.6 | 5.11 |
+| mamba2_20cls_elects / 0.9 고정 | 92.19% | 48.3% | 3.92% | 7.35% | 98.0 | 27.2 | 4.83 |
+| mamba2_20cls_elects / 정지 확률 ≥ 0.5 | 93.26% | 55.8% | 3.14% | 5.22% | 117.9 | 31.0 | 5.58 |
 
 ## 같은 정확도에서의 Mean Earliness (곡선을 선형 보간)
 | 목표 Stopping Accuracy | mamba2_20cls 고정 threshold | mamba2_20cls_elects 고정 threshold | mamba2_20cls_elects 정지 head |

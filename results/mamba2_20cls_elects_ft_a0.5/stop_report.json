@@ -78,7 +78,10 @@
         0.00854,
         0.00372,
         0.00196
-      ]
+      ],
+      "points_recompute": 30.16298,
+      "points_streaming": 14.1015,
+      "readouts": 2.60724
     },
     {
       "threshold": 0.6,
@@ -109,7 +112,10 @@
         0.0162,
         0.00736,
         0.0062
-      ]
+      ],
+      "points_recompute": 40.56528,
+      "points_streaming": 16.5872,
+      "readouts": 3.05688
     },
     {
       "threshold": 0.7,
@@ -140,7 +146,10 @@
         0.02672,
         0.0146,
         0.01826
-      ]
+      ],
+      "points_recompute": 53.87114,
+      "points_streaming": 19.35174,
+      "readouts": 3.54732
     },
     {
       "threshold": 0.75,
@@ -171,7 +180,10 @@
         0.0329,
         0.01866,
         0.0292
-      ]
+      ],
+      "points_recompute": 62.2972,
+      "points_streaming": 20.96078,
+      "readouts": 3.81984
     },
     {
       "threshold": 0.8,
@@ -202,7 +214,10 @@
         0.04008,
         0.0237,
         0.04384
-      ]
+      ],
+      "points_recompute": 72.07704,
+      "points_streaming": 22.75116,
+      "readouts": 4.1218
     },
     {
       "threshold": 0.85,
@@ -233,7 +248,10 @@
         0.04914,
         0.02904,
         0.0664
-      ]
+      ],
+      "points_recompute": 84.77998,
+      "points_streaming": 24.9426,
+      "readouts": 4.48438
     },
     {
       "threshold": 0.9,
@@ -264,7 +282,10 @@
         0.05894,
         0.03594,
         0.10158
-      ]
+      ],
+      "points_recompute": 101.75396,
+      "points_streaming": 27.7345,
+      "readouts": 4.93732
     },
     {
       "threshold": 0.925,
@@ -295,7 +316,10 @@
         0.06378,
         0.04088,
         0.1268
-      ]
+      ],
+      "points_recompute": 112.88366,
+      "points_streaming": 29.50938,
+      "readouts": 5.22512
     },
     {
       "threshold": 0.95,
@@ -326,7 +350,10 @@
         0.0678,
         0.04632,
         0.16472
-      ]
+      ],
+      "points_recompute": 127.71422,
+      "points_streaming": 31.80772,
+      "readouts": 5.59676
     },
     {
       "threshold": 0.97,
@@ -357,7 +384,10 @@
         0.07336,
         0.0519,
         0.2149
-      ]
+      ],
+      "points_recompute": 146.1177,
+      "points_streaming": 34.5749,
+      "readouts": 6.04274
     },
     {
       "threshold": 0.98,
@@ -388,7 +418,10 @@
         0.07382,
         0.05534,
         0.25936
-      ]
+      ],
+      "points_recompute": 160.33396,
+      "points_streaming": 36.6425,
+      "readouts": 6.38084
     },
     {
       "threshold": 0.99,
@@ -419,7 +452,10 @@
         0.07492,
         0.0586,
         0.34224
-      ]
+      ],
+      "points_recompute": 184.62012,
+      "points_streaming": 40.07472,
+      "readouts": 6.94496
     },
     {
       "threshold": 0.995,
@@ -450,7 +486,10 @@
         0.07094,
         0.05758,
         0.43062
-      ]
+      ],
+      "points_recompute": 207.67422,
+      "points_streaming": 43.23784,
+      "readouts": 7.4733
     }
   ],
   "stop_head_curve": [
@@ -483,7 +522,10 @@
         0.07038,
         0.04504,
         0.09306
-      ]
+      ],
+      "points_recompute": 102.84534,
+      "points_streaming": 28.82636,
+      "readouts": 5.32432
     },
     {
       "stop_prob": 0.1,
@@ -514,7 +556,10 @@
         0.07308,
         0.0476,
         0.1036
-      ]
+      ],
+      "points_recompute": 107.24762,
+      "points_streaming": 29.52898,
+      "readouts": 5.44404
     },
     {
       "stop_prob": 0.15,
@@ -545,7 +590,10 @@
         0.07408,
         0.04912,
         0.11102
-      ]
+      ],
+      "points_recompute": 110.10944,
+      "points_streaming": 29.9806,
+      "readouts": 5.5201
     },
     {
       "stop_prob": 0.2,
@@ -576,7 +624,10 @@
         0.07554,
         0.0505,
         0.11622
-      ]
+      ],
+      "points_recompute": 112.27056,
+      "points_streaming": 30.32146,
+      "readouts": 5.57882
     },
     {
       "stop_prob": 0.3,
@@ -607,7 +658,10 @@
         0.07736,
         0.0528,
         0.12524
-      ]
+      ],
+      "points_recompute": 115.83178,
+      "points_streaming": 30.86778,
+      "readouts": 5.67042
     },
     {
       "stop_prob": 0.4,
@@ -638,7 +692,10 @@
         0.07818,
         0.05498,
         0.13328
-      ]
+      ],
+      "points_recompute": 118.79586,
+      "points_streaming": 31.31724,
+      "readouts": 5.74534
     },
     {
       "stop_prob": 0.5,
@@ -669,7 +726,10 @@
         0.07866,
         0.05682,
         0.14088
-      ]
+      ],
+      "points_recompute": 121.43794,
+      "points_streaming": 31.71092,
+      "readouts": 5.81126
     },
     {
       "stop_prob": 0.6,
@@ -700,7 +760,10 @@
         0.0798,
         0.05798,
         0.14822
-      ]
+      ],
+      "points_recompute": 124.09782,
+      "points_streaming": 32.11764,
+      "readouts": 5.87826
     },
     {
       "stop_prob": 0.7,
@@ -731,7 +794,10 @@
         0.08114,
         0.05906,
         0.15664
-      ]
+      ],
+      "points_recompute": 127.06612,
+      "points_streaming": 32.5632,
+      "readouts": 5.95284
     },
     {
       "stop_prob": 0.8,
@@ -762,7 +828,10 @@
         0.08262,
         0.06068,
         0.16752
-      ]
+      ],
+      "points_recompute": 130.73222,
+      "points_streaming": 33.10344,
+      "readouts": 6.04386
     },
     {
       "stop_prob": 0.9,
@@ -793,7 +862,10 @@
         0.08476,
         0.06356,
         0.18504
-      ]
+      ],
+      "points_recompute": 136.7003,
+      "points_streaming": 33.97882,
+      "readouts": 6.18676
     }
   ],
   "stop_prob_by_fraction": [
@@ -889,7 +961,10 @@
           0.00862,
           0.00376,
           0.00194
-        ]
+        ],
+        "points_recompute": 29.92472,
+        "points_streaming": 14.0373,
+        "readouts": 2.59804
       },
       {
         "threshold": 0.6,
@@ -920,7 +995,10 @@
           0.01584,
           0.00816,
           0.0076
-        ]
+        ],
+        "points_recompute": 40.8544,
+        "points_streaming": 16.6184,
+        "readouts": 3.07102
       },
       {
         "threshold": 0.7,
@@ -951,7 +1029,10 @@
           0.02778,
           0.01516,
           0.02134
-        ]
+        ],
+        "points_recompute": 54.93558,
+        "points_streaming": 19.52184,
+        "readouts": 3.58634
       },
       {
         "threshold": 0.75,
@@ -982,7 +1063,10 @@
           0.0354,
           0.0197,
           0.0332
-        ]
+        ],
+        "points_recompute": 63.9447,
+        "points_streaming": 21.22862,
+        "readouts": 3.88094
       },
       {
         "threshold": 0.8,
@@ -1013,7 +1097,10 @@
           0.04256,
           0.02524,
           0.05096
-        ]
+        ],
+        "points_recompute": 75.00414,
+        "points_streaming": 23.214,
+        "readouts": 4.215
       },
       {
         "threshold": 0.85,
@@ -1044,7 +1131,10 @@
           0.05046,
           0.03136,
           0.077
-        ]
+        ],
+        "points_recompute": 88.81258,
+        "points_streaming": 25.587,
+        "readouts": 4.60818
       },
       {
         "threshold": 0.9,
@@ -1075,7 +1165,10 @@
           0.0608,
           0.03972,
           0.116
-        ]
+        ],
+        "points_recompute": 107.27118,
+        "points_streaming": 28.62868,
+        "readouts": 5.11424
       },
       {
         "threshold": 0.925,
@@ -1106,7 +1199,10 @@
           0.06502,
           0.0438,
           0.14594
-        ]
+        ],
+        "points_recompute": 119.04048,
+        "points_streaming": 30.48142,
+        "readouts": 5.42636
       },
       {
         "threshold": 0.95,
@@ -1137,7 +1233,10 @@
           0.07058,
           0.05028,
           0.18672
-        ]
+        ],
+        "points_recompute": 135.07002,
+        "points_streaming": 32.9767,
+        "readouts": 5.83854
       },
       {
         "threshold": 0.97,
@@ -1168,7 +1267,10 @@
           0.0765,
           0.05564,
           0.24366
-        ]
+        ],
+        "points_recompute": 154.57578,
+        "points_streaming": 35.89822,
+        "readouts": 6.3245
       },
       {
         "threshold": 0.98,
@@ -1199,7 +1301,10 @@
           0.0787,
           0.05882,
           0.29062
-        ]
+        ],
+        "points_recompute": 169.18514,
+        "points_streaming": 38.01762,
+        "readouts": 6.6818
       },
       {
         "threshold": 0.99,
@@ -1230,7 +1335,10 @@
           0.07934,
           0.0627,
           0.37594
-        ]
+        ],
+        "points_recompute": 193.18564,
+        "points_streaming": 41.38068,
+        "readouts": 7.24752
       },
       {
         "threshold": 0.995,
@@ -1261,7 +1369,10 @@
           0.0737,
           0.06118,
           0.46334
-        ]
+        ],
+        "points_recompute": 215.03048,
+        "points_streaming": 44.3674,
+        "readouts": 7.75572
       }
     ],
     "stop_head_curve": []
