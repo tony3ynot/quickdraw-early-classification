@@ -27,7 +27,7 @@ STOP_PROBS = [0.05, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 
 
 def metrics(stop: np.ndarray, obs: Observations) -> dict:
-    return stopping_metrics(first_stop(stop), obs.logits.argmax(-1), obs.labels, obs.fractions)
+    return stopping_metrics(first_stop(stop), obs.logits.argmax(-1), obs.labels, obs.fractions, obs.n_obs)
 
 
 def analyze(obs: Observations) -> dict:
@@ -53,10 +53,12 @@ def analyze(obs: Observations) -> dict:
 def to_markdown(name: str, r: dict, ref_name: str | None, ref: dict | None) -> str:
     def row(label: str, m: dict) -> str:
         return (f"| {label} | {m['stopping_accuracy']:.2%} | {m['mean_earliness']:.1%} | "
-                f"{m['harmful_gap']:.2%} | {m['max_accumulated_harmful_gap']:.2%} |")
+                f"{m['harmful_gap']:.2%} | {m['max_accumulated_harmful_gap']:.2%} | "
+                f"{m['points_recompute']:.1f} | {m['points_streaming']:.1f} | {m['readouts']:.2f} |")
 
-    header = ["| 분류 모델 / 정지 정책 | Stopping Accuracy | Mean Earliness | Harmful Gap | 최대 누적 조건부 Harmful Gap |",
-              "|---|---|---|---|---|"]
+    header = ["| 분류 모델 / 정지 정책 | Stopping Accuracy | Mean Earliness | Harmful Gap | 최대 누적 조건부 Harmful Gap "
+              "| 계산한 점 (재추론) | 계산한 점 (상태 유지) | 예측 횟수 |",
+              "|---|---|---|---|---|---|---|---|"]
     fixed09 = next(p for p in r["fixed_curve"] if p["threshold"] == 0.9)
     lines = [f"# {name}: 정지 정책 비교 (test {r['n']:,}개)", "", "## 주요 조건", *header]
     if ref:

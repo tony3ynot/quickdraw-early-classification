@@ -41,7 +41,8 @@ def dense_cross_entropy(logits: torch.Tensor, lengths: torch.Tensor, labels: tor
 
 
 def elects_loss(logits: torch.Tensor, stop_logit: torch.Tensor, lengths: torch.Tensor,
-                labels: torch.Tensor, fractions, alpha: float) -> torch.Tensor:
+                labels: torch.Tensor, fractions, alpha: float,
+                fixed_stop_weights=None) -> torch.Tensor:
     """ELECTS loss (Rußwurm et al., arXiv 1901.10681)를 10개 관찰 시점에 적용한 것.
 
     관찰 시점 k마다 모델이 정지 확률 δ_k를 낸다 (마지막 시점은 δ = 1).
@@ -51,14 +52,21 @@ def elects_loss(logits: torch.Tensor, stop_logit: torch.Tensor, lengths: torch.T
 
     원 논문과 다른 점: 원 논문은 모든 시점에 ε/T를 더해 초반 붕괴를 막는데,
     여기서는 그 역할을 baseline의 dense cross-entropy가 맡는다 (main에서 두 loss를 더한다).
+
+    fixed_stop_weights (길이 K)를 주면 정지 head를 쓰지 않고 P(k에서 멈춤)을 이 값으로 고정한다.
+    "정지를 함께 학습한 효과"와 "관찰 시점에 loss 가중치를 더 준 효과"를 가르기 위한 비교 실험용이다.
     """
     pos = prefix_lengths(lengths, fractions) - 1                                  # [B, K]
     obs_logits = logits.float().gather(1, pos.unsqueeze(-1).expand(-1, -1, logits.shape[-1]))
-    delta = torch.sigmoid(stop_logit.float().gather(1, pos))
-    delta = torch.cat([delta[:, :-1], torch.ones_like(delta[:, :1])], dim=1)       # 마지막은 강제 정지
-    still_going = torch.cumprod(1 - delta[:, :-1], dim=1)
-    still_going = torch.cat([torch.ones_like(delta[:, :1]), still_going], dim=1)   # Π_{j<k} (1 − δ_j)
-    p_stop = delta * still_going                                                   # [B, K], 합이 1
+    if fixed_stop_weights is not None:
+        p_stop = torch.tensor(list(fixed_stop_weights), device=logits.device,
+                              dtype=torch.float32).unsqueeze(0)                    # [1, K]
+    else:
+        delta = torch.sigmoid(stop_logit.float().gather(1, pos))
+        delta = torch.cat([delta[:, :-1], torch.ones_like(delta[:, :1])], dim=1)   # 마지막은 강제 정지
+        still_going = torch.cumprod(1 - delta[:, :-1], dim=1)
+        still_going = torch.cat([torch.ones_like(delta[:, :1]), still_going], dim=1)  # Π_{j<k} (1 − δ_j)
+        p_stop = delta * still_going                                               # [B, K], 합이 1
 
     log_p = F.log_softmax(obs_logits, dim=-1)
     ce = -log_p.gather(-1, labels.view(-1, 1, 1).expand(-1, log_p.shape[1], 1)).squeeze(-1)
@@ -187,7 +195,8 @@ def main() -> None:
             loss = dense_cross_entropy(logits, lengths, labels)
             if elects:
                 loss = loss + elects_loss(logits, stop_logit, lengths, labels,
-                                          cfg["eval"]["fractions"], elects["alpha"])
+                                          cfg["eval"]["fractions"], elects["alpha"],
+                                          elects.get("fixed_stop_weights"))
 
             optimizer.zero_grad(set_to_none=True)
             loss.backward()

@@ -41,7 +41,8 @@ from qd.dump import Observations
 from qd.policies import (earliness_at_accuracy, expected_calibration_error, first_stop,
                          fixed_threshold, stopping_metrics)
 
-COSTS = [0.0, 0.02, 0.05, 0.08, 0.12, 0.16, 0.2, 0.25, 0.3, 0.4, 0.5, 0.7]
+# 0.2~0.35 구간에서 정확도가 빠르게 변하므로 (0.9 고정 규칙과 겹치는 구간) 촘촘하게 둔다.
+COSTS = [0.0, 0.02, 0.05, 0.08, 0.12, 0.16, 0.2, 0.22, 0.24, 0.26, 0.28, 0.3, 0.32, 0.35, 0.4, 0.5, 0.7]
 THRESHOLDS = [0.5, 0.6, 0.7, 0.75, 0.8, 0.85, 0.9, 0.925, 0.95, 0.97, 0.98, 0.99, 0.995]
 
 
@@ -108,7 +109,7 @@ def apply_policy(nets: nn.ModuleList, states: torch.Tensor) -> np.ndarray:
 
 
 def evaluate_stops(stop: np.ndarray, obs: Observations) -> dict:
-    return stopping_metrics(first_stop(stop), obs.logits.argmax(-1), obs.labels, obs.fractions)
+    return stopping_metrics(first_stop(stop), obs.logits.argmax(-1), obs.labels, obs.fractions, obs.n_obs)
 
 
 def threshold_curve(obs: Observations) -> list[dict]:
@@ -124,13 +125,14 @@ def closest(curve: list[dict], target_accuracy: float) -> dict:
 def to_markdown(r: dict) -> str:
     def row(name: str, m: dict) -> str:
         return (f"| {name} | {m['stopping_accuracy']:.2%} | {m['mean_earliness']:.1%} | "
-                f"{m['harmful_gap']:.2%} | {m['max_accumulated_harmful_gap']:.2%} |")
+                f"{m['harmful_gap']:.2%} | {m['max_accumulated_harmful_gap']:.2%} | "
+                f"{m['points_recompute']:.1f} | {m['points_streaming']:.1f} | {m['readouts']:.2f} |")
 
     best = r["selected"]
     lines = [
         f"# {r['run_name']}: Deep Optimal Stopping 결과",
         "",
-        "분류 모델(baseline Mamba)은 그대로 두고 정지 정책만 바꿨다. "
+        "분류 모델은 그대로 두고 정지 정책만 바꿨다. "
         "원 논문: Becker, Cheridito, Jentzen, *Deep Optimal Stopping*, JMLR 2019.",
         "",
         "## 조건",
@@ -143,8 +145,9 @@ def to_markdown(r: dict) -> str:
         "가장 낮은 것으로 골랐다. test는 선택에 쓰지 않았다.",
         "",
         "## test 결과",
-        "| 정지 정책 | Stopping Accuracy | Mean Earliness | Harmful Gap | 최대 누적 조건부 Harmful Gap |",
-        "|---|---|---|---|---|",
+        "| 정지 정책 | Stopping Accuracy | Mean Earliness | Harmful Gap | 최대 누적 조건부 Harmful Gap "
+        "| 계산한 점 (재추론) | 계산한 점 (상태 유지) | 예측 횟수 |",
+        "|---|---|---|---|---|---|---|---|",
         row("0.9 고정 (baseline)", r["test"]["fixed_0.9"]),
         row(f"Deep Optimal Stopping (cost {best['cost_matched']})", r["test"]["dos_matched"]),
         row(f"고정 threshold {r['test']['tuned_fixed']['threshold']} (선택용 데이터에서 DOS와 정확도를 맞춤)",

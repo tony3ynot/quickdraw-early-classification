@@ -21,11 +21,18 @@ def fixed_threshold(confidence: np.ndarray, threshold: float) -> np.ndarray:
 
 
 def stopping_metrics(stop_index: np.ndarray, preds: np.ndarray, labels: np.ndarray,
-                     fractions: np.ndarray) -> dict:
+                     fractions: np.ndarray, n_obs: np.ndarray | None = None) -> dict:
     """정지 시점 [N], 시점별 예측 [N, K], 정답 [N] → 조기 예측 지표.
 
     Harmful Gap: 완성된 스케치(100%)에서는 맞혔을 텐데 일찍 멈춰서 틀린 스케치의 비율.
     누적 조건부 Harmful Gap: 시점 t까지 멈춘 스케치들만 놓고 본 Harmful Gap (Ringel et al., 2024).
+
+    n_obs [N, K](시점별 관찰 점 개수)를 주면 연산량도 낸다. qd/evaluate.py와 같은 규칙이다:
+    관찰한 점 개수가 직전 시점과 같으면 다시 예측하지 않는다.
+      points_recompute : 시점마다 prefix 전체를 재추론할 때 모델이 계산한 점 개수의 합
+      points_streaming : 상태를 유지할 때 계산한 점 개수 (= 정지 시점까지 관찰한 점 개수)
+      readouts         : 예측을 읽은 횟수
+    FLOPs = 점 개수 × 점 하나당 FLOPs + readouts × head FLOPs (qd/flops.py).
     """
     rows = np.arange(len(labels))
     correct = preds[rows, stop_index] == labels
@@ -34,7 +41,7 @@ def stopping_metrics(stop_index: np.ndarray, preds: np.ndarray, labels: np.ndarr
     for k in range(len(fractions)):
         stopped = stop_index <= k
         accumulated.append(float(harmful[stopped].mean()) if stopped.any() else None)
-    return {
+    result = {
         "stopping_accuracy": float(correct.mean()),
         "mean_earliness": float(fractions[stop_index].mean()),
         "harmful_gap": float(harmful.mean()),
@@ -42,6 +49,15 @@ def stopping_metrics(stop_index: np.ndarray, preds: np.ndarray, labels: np.ndarr
         "accumulated_harmful_gap": accumulated,
         "stop_share": [float((stop_index == k).mean()) for k in range(len(fractions))],
     }
+    if n_obs is not None:
+        is_new = np.ones_like(n_obs, dtype=bool)
+        is_new[:, 1:] = n_obs[:, 1:] != n_obs[:, :-1]                       # 새 점이 들어온 시점만
+        visited = np.arange(n_obs.shape[1])[None, :] <= stop_index[:, None]  # 정지 시점까지
+        used = is_new & visited
+        result["points_recompute"] = float((n_obs * used).sum(1).mean())
+        result["points_streaming"] = float(n_obs[rows, stop_index].mean())
+        result["readouts"] = float(used.sum(1).mean())
+    return result
 
 
 def expected_calibration_error(confidence: np.ndarray, correct: np.ndarray, n_bins: int = 15) -> float:

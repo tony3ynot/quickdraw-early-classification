@@ -1,0 +1,17 @@
+{
+  "run_name": "mamba2_20cls_elects_ft_a0.3",
+  "completed": true,
+  "epochs_done": 5,
+  "steps_done": 13670,
+  "train_seconds": 1833.3,
+  "val_seconds": 16.1,
+  "train_hours": 0.509,
+  "best_epoch": 5,
+  "best_val_mean_acc": 0.7961,
+  "n_params": 883477,
+  "gpu": "NVIDIA L4",
+  "peak_gpu_memory_gb": 4.9,
+  "n_train": 1400000,
+  "n_valid": 50000,
+  "torch": "2.8.0+cu128"
+}

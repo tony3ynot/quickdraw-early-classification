@@ -1,0 +1,67 @@
+# 20개 클래스 / 2-layer Mamba + ELECTS loss에서 정지 분포를 고정한 비교 실험
+# 목적: ELECTS의 이득이 "정지를 함께 학습해서"인지 "관찰 시점에 loss 가중치를 더 줘서"인지 가른다.
+# baseline(mamba_20cls.yaml)과 다른 곳: run_name, train.elects (정지 head는 없다)
+run_name: mamba2_20cls_fixedstop
+seed: 0
+
+data:
+  # 공식 Sketch-RNN QuickDraw .npz (클래스당 파일 1개, 공식 train/valid/test 분할 포함)
+  raw_dir: ~/data/quickdraw/sketchrnn
+  # 전처리 결과(패딩된 배열)를 저장하는 위치. 클래스 목록이 바뀌면 새 캐시가 만들어진다.
+  cache_dir: ~/data/quickdraw/cache
+  # 스케치당 최대 점 개수. 더 긴 스케치는 앞에서부터 잘라 쓴다 (SketchMamba 논문과 동일한 200).
+  max_len: 200
+  classes:
+    - cat
+    - dog
+    - rabbit
+    - elephant
+    - fish
+    - car
+    - bus
+    - bicycle
+    - airplane
+    - train
+    - chair
+    - table
+    - clock
+    - cup
+    - umbrella
+    - tree
+    - flower
+    - mushroom
+    - cloud
+    - mountain
+
+model:
+  d_model: 256   # 토큰(점) 하나의 임베딩 차원
+  n_layers: 2    # Mamba 블록 수
+  d_state: 16    # 상태공간 모델의 상태 차원
+  d_conv: 4      # Mamba 내부 causal conv 커널 크기
+  expand: 2      # 내부 채널 확장 비율 (d_inner = expand * d_model)
+
+train:
+  epochs: 30            # L4에서 1 epoch ≈ 5.7분 → 약 2.9시간 (팀 합의: 3시간 안팎)
+  batch_size: 512
+  lr: 1.0e-3            # warmup 뒤 cosine으로 감소
+  weight_decay: 0.05
+  warmup_steps: 1000
+  grad_clip: 1.0
+  amp: true             # bfloat16 mixed precision
+  eval_batch_size: 2048
+  log_every: 200
+  out_dir: ~/runs       # 체크포인트와 로그 위치 (레포 밖, GitHub에 올리지 않음)
+  elects:
+    alpha: 0.5
+    # 학습된 ELECTS 모델(mamba2_20cls_elects)이 valid에서 낸 "시점 k에 멈출 확률"의 평균.
+    # 스케치마다 달라지는 정지 확률 대신 이 값을 모든 스케치에 똑같이 쓴다.
+    fixed_stop_weights: [0.0307, 0.0850, 0.1361, 0.1521, 0.1338, 0.1220, 0.0961, 0.0717, 0.0468, 0.1257]
+
+eval:
+  split: test
+  fractions: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+  threshold: 0.9        # 최대 클래스 확률이 이 값 이상이면 예측 확정
+  # 연산량·지연 시간을 세는 방식. 둘 다 실제로 실행해 나란히 기록한다 (예측은 서로 같다).
+  #   streaming: 상태를 유지하며 새 점만 처리 / recompute: 시점마다 prefix 전체를 재추론
+  modes: [streaming, recompute]
+  warmup_iters: 100     # 지연 시간 측정 전 GPU 예열 횟수
