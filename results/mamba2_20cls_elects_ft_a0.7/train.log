@@ -1,4 +1,4 @@
-[2026-11-24 09:12:10] init: /home/tonyp/runs/mamba2_20cls/best.pt 에서 가중치를 불러옴 (새로 초기화된 파라미터: ['stop_head.weight', 'stop_head.bias'])
+[2026-11-24 09:12:10] init: ~/runs/mamba2_20cls/best.pt 에서 가중치를 불러옴 (새로 초기화된 파라미터: ['stop_head.weight', 'stop_head.bias'])
 [2026-11-24 09:12:10] run=mamba2_20cls_elects_ft_a0.7  params=883,477  gpu=NVIDIA L4
 [2026-11-24 09:12:10] train=1,400,000  valid=50,000  classes=20  batch=512  steps/epoch=2734  epochs=5
 [2026-11-24 09:12:37] epoch 1 step 200/2734  loss 1.4913  lr 6.03e-05  7.2 it/s
