@@ -1,0 +1,289 @@
+{
+  "info": {
+    "run_name": "mamba2_20cls_elects",
+    "split": "test",
+    "n_split": 50000,
+    "n_classes": 20,
+    "classes": [
+      "cat",
+      "dog",
+      "rabbit",
+      "elephant",
+      "fish",
+      "car",
+      "bus",
+      "bicycle",
+      "airplane",
+      "train",
+      "chair",
+      "table",
+      "clock",
+      "cup",
+      "umbrella",
+      "tree",
+      "flower",
+      "mushroom",
+      "cloud",
+      "mountain"
+    ],
+    "model": "2-layer Mamba, d_model 256",
+    "model_config": {
+      "d_model": 256,
+      "n_layers": 2,
+      "d_state": 16,
+      "d_conv": 4,
+      "expand": 2,
+      "stop_head": true
+    },
+    "n_params": 883477,
+    "checkpoint_epoch": 28,
+    "gpu": "NVIDIA L4",
+    "torch": "2.8.0+cu128",
+    "eval_seconds": {
+      "recompute": 485.0
+    },
+    "train": {
+      "run_name": "mamba2_20cls_elects",
+      "completed": true,
+      "epochs_done": 30,
+      "steps_done": 82020,
+      "train_seconds": 11001.4,
+      "val_seconds": 96.5,
+      "train_hours": 3.056,
+      "best_epoch": 28,
+      "best_val_mean_acc": 0.7952,
+      "n_params": 883477,
+      "gpu": "NVIDIA L4",
+      "peak_gpu_memory_gb": 4.89,
+      "n_train": 1400000,
+      "n_valid": 50000,
+      "torch": "2.8.0+cu128"
+    }
+  },
+  "fractions": [
+    0.1,
+    0.2,
+    0.3,
+    0.4,
+    0.5,
+    0.6,
+    0.7,
+    0.8,
+    0.9,
+    1.0
+  ],
+  "accuracy_by_fraction": [
+    0.4056600034236908,
+    0.5795999765396118,
+    0.7054799795150757,
+    0.789359986782074,
+    0.8442999720573425,
+    0.884119987487793,
+    0.912339985370636,
+    0.9327799677848816,
+    0.9438199996948242,
+    0.9560799598693848
+  ],
+  "flops_per_point": 924416,
+  "head_flops": 5376,
+  "single_pass": {
+    "accuracy": 0.9560799598693848,
+    "flops_mean": 53206015.984639995,
+    "latency_ms_mean": 1.5981662054395929
+  },
+  "early_stopping": {
+    "policy": "Deep Optimal Stopping (cost 0.32, 입력 feature+probs)",
+    "policy_flops_per_decision": 54400,
+    "n_sketches": 50000,
+    "decision_agreement": null,
+    "modes": {
+      "recompute": {
+        "stopping_accuracy": 0.92496,
+        "mean_earliness": 0.4808619999999999,
+        "cumulative_flops_mean": 85370573.90848,
+        "cumulative_latency_ms": {
+          "mean": 9.283722331600693,
+          "median": 9.507796999969287,
+          "p95": 17.326927550539036
+        },
+        "mean_points_processed": 92.03988,
+        "mean_readouts": 4.8079,
+        "stopped_by_policy_rate": 1.0,
+        "stop_distribution": [
+          {
+            "fraction": 0.1,
+            "share": 0.03172,
+            "accuracy": 0.9722572509457755
+          },
+          {
+            "fraction": 0.2,
+            "share": 0.11558,
+            "accuracy": 0.9415123723827652
+          },
+          {
+            "fraction": 0.3,
+            "share": 0.13638,
+            "accuracy": 0.9476462824461065
+          },
+          {
+            "fraction": 0.4,
+            "share": 0.19192,
+            "accuracy": 0.9454981242184244
+          },
+          {
+            "fraction": 0.5,
+            "share": 0.20178,
+            "accuracy": 0.9382495787491327
+          },
+          {
+            "fraction": 0.6,
+            "share": 0.10894,
+            "accuracy": 0.9254635579217918
+          },
+          {
+            "fraction": 0.7,
+            "share": 0.08836,
+            "accuracy": 0.9015391579900407
+          },
+          {
+            "fraction": 0.8,
+            "share": 0.06586,
+            "accuracy": 0.8724567263893107
+          },
+          {
+            "fraction": 0.9,
+            "share": 0.03362,
+            "accuracy": 0.8262938726948245
+          },
+          {
+            "fraction": 1.0,
+            "share": 0.02584,
+            "accuracy": 0.7569659442724458
+          }
+        ],
+        "per_class": [
+          {
+            "class": "cat",
+            "n": 2500,
+            "stopping_accuracy": 0.8596,
+            "mean_earliness": 0.47791999999999996
+          },
+          {
+            "class": "dog",
+            "n": 2500,
+            "stopping_accuracy": 0.764,
+            "mean_earliness": 0.6568
+          },
+          {
+            "class": "rabbit",
+            "n": 2500,
+            "stopping_accuracy": 0.8988,
+            "mean_earliness": 0.45852
+          },
+          {
+            "class": "elephant",
+            "n": 2500,
+            "stopping_accuracy": 0.8896,
+            "mean_earliness": 0.4685199999999999
+          },
+          {
+            "class": "fish",
+            "n": 2500,
+            "stopping_accuracy": 0.9496,
+            "mean_earliness": 0.475
+          },
+          {
+            "class": "car",
+            "n": 2500,
+            "stopping_accuracy": 0.9032,
+            "mean_earliness": 0.50092
+          },
+          {
+            "class": "bus",
+            "n": 2500,
+            "stopping_accuracy": 0.9144,
+            "mean_earliness": 0.54508
+          },
+          {
+            "class": "bicycle",
+            "n": 2500,
+            "stopping_accuracy": 0.984,
+            "mean_earliness": 0.48623999999999995
+          },
+          {
+            "class": "airplane",
+            "n": 2500,
+            "stopping_accuracy": 0.936,
+            "mean_earliness": 0.50552
+          },
+          {
+            "class": "train",
+            "n": 2500,
+            "stopping_accuracy": 0.9172,
+            "mean_earliness": 0.41228000000000004
+          },
+          {
+            "class": "chair",
+            "n": 2500,
+            "stopping_accuracy": 0.9272,
+            "mean_earliness": 0.54032
+          },
+          {
+            "class": "table",
+            "n": 2500,
+            "stopping_accuracy": 0.9412,
+            "mean_earliness": 0.61836
+          },
+          {
+            "class": "clock",
+            "n": 2500,
+            "stopping_accuracy": 0.9896,
+            "mean_earliness": 0.5154
+          },
+          {
+            "class": "cup",
+            "n": 2500,
+            "stopping_accuracy": 0.966,
+            "mean_earliness": 0.51976
+          },
+          {
+            "class": "umbrella",
+            "n": 2500,
+            "stopping_accuracy": 0.9364,
+            "mean_earliness": 0.45888
+          },
+          {
+            "class": "tree",
+            "n": 2500,
+            "stopping_accuracy": 0.9156,
+            "mean_earliness": 0.33824
+          },
+          {
+            "class": "flower",
+            "n": 2500,
+            "stopping_accuracy": 0.9432,
+            "mean_earliness": 0.38824000000000003
+          },
+          {
+            "class": "mushroom",
+            "n": 2500,
+            "stopping_accuracy": 0.9128,
+            "mean_earliness": 0.60288
+          },
+          {
+            "class": "cloud",
+            "n": 2500,
+            "stopping_accuracy": 0.974,
+            "mean_earliness": 0.4218
+          },
+          {
+            "class": "mountain",
+            "n": 2500,
+            "stopping_accuracy": 0.9768,
+            "mean_earliness": 0.22656000000000004
+          }
+        ]
+      }
+    }
+  }
+}

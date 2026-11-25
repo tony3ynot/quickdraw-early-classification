@@ -182,28 +182,32 @@ baseline의 Dense CE는 스케치의 모든 점을 똑같이 평균하기 때문
 
 ## 연산량
 
-FLOPs는 정지 시점이 정해지면 계산되는 값이라 저장된 시점별 예측으로 구함 (점 하나당 924,416 FLOPs + head, DOS는 MLP 비용 포함)
+test 50,000개, batch size 1, NVIDIA L4에서 조건별로 실제 실행해서 측정함. FLOPs는 점 하나당 924,416 + head이고 DOS는 MLP 비용 포함. Latency는 시점마다 prefix를 재추론하는 방식 기준
 
-| 조건 | 예측 횟수 | FLOPs (prefix 재추론) | FLOPs (상태 재사용) |
-|---|---|---|---|
-| M0 Baseline + Fixed 0.9 | 5.11 | 99.2 M | 26.5 M |
-| M1 Baseline + DOS | 4.96 | 89.0 M | 26.4 M |
-| M2 ELECTS + Fixed 0.9 | 4.83 | 90.6 M | 25.2 M |
-| M3 ELECTS + 정지 head | 5.58 | 109.0 M | 28.7 M |
-| M4 ELECTS + DOS | 4.81 | 85.3 M | 25.6 M |
+| 조건 | 예측 횟수 | FLOPs (prefix 재추론) | FLOPs (상태 재사용) | Latency (prefix 재추론) |
+|---|---|---|---|---|
+| M0 Baseline + Fixed 0.9 | 5.11 | 99.2 M | 26.5 M | 7.97 ms |
+| M1 Baseline + DOS | 4.96 | 88.9 M | 26.4 M | 9.20 ms |
+| M2 ELECTS + Fixed 0.9 | 4.83 | 90.6 M | 25.2 M | 7.90 ms |
+| M3 ELECTS + 정지 head | 5.58 | 109.0 M | 28.7 M | 9.04 ms |
+| M4 ELECTS + DOS | 4.81 | 85.4 M | 25.6 M | 9.28 ms |
 
-재추론 기준으로 M4가 baseline보다 14% 적음. Latency는 M0만 실측했고(7.56 ms) 나머지 조건은 아직 재지 않음
+FLOPs는 M4가 baseline보다 14% 적음. 그런데 Latency는 DOS를 쓴 조건(M1, M4)이 Fixed보다 오히려 1.2~1.4 ms 김. 예측 횟수는 줄었지만 시점마다 정지 MLP를 한 번씩 더 호출하기 때문임 (호출 한 번에 약 0.3 ms). 모델이 작아서 계산량보다 호출 횟수가 Latency를 좌우하는 것은 baseline에서 본 것과 같음
+
+→ 상태 재사용 방식의 FLOPs는 계산값이고, 그 방식의 Latency는 baseline에서만 측정함 (41.73 ms, 점 단위 호출 기준)
+
+→ M0의 Latency가 baseline 정리 때(7.56 ms)와 조금 다른 것은 정지 정책을 바꿔 끼울 수 있게 평가 코드를 고친 영향임. 위 표는 다섯 조건 모두 같은 코드로 측정함
 
 ## 최종 결론
 
 1. DOS는 재학습 없이 92~93% 정확도 구간에서 Fixed Threshold보다 0.7~1.5%p 빨리 멈춤. 초기 정지를 막고 100%까지 끄는 스케치를 줄이는 정책을 학습했지만, 94% 이상을 목표로 하면 이득이 없었음
 2. ELECTS는 분류 모델을 개선했음 (같은 정확도에서 1.7~7.1%p 빠른 정지, 100% 정확도 94.8% → 95.6%). 하지만 ELECTS가 학습한 정지 head는 Fixed Threshold보다 4%p 정도 늦게 멈춰서, 정지 규칙으로는 쓸 이유가 없었음
 3. ELECTS의 이득은 대부분 loss 가중 효과였음. 정지 확률을 학습하지 않고 고정해도 이득의 63~76%가 재현됨
-4. 분류 모델 개선과 정지 정책 개선은 같이 쓸 수 있음. ELECTS 모델 + DOS는 92.5% 정확도에서 baseline보다 3.1%p 빨리 멈추고 FLOPs도 14% 적음
+4. 분류 모델 개선과 정지 정책 개선은 같이 쓸 수 있음. ELECTS 모델 + DOS는 92.5% 정확도에서 baseline보다 3.1%p 빨리 멈추고 FLOPs도 14% 적음. 다만 DOS는 정지 MLP 호출 때문에 Latency가 1.2~1.4 ms 늘어남
 
 종합하면 Transformer 쪽 결론과 같은 방향임. **부분 스케치의 정확도가 올라간다고 조기 정지 성능이 따라 올라가지는 않고, confidence가 얼마나 잘 맞는지가 더 중요했음.** 20~60% 구간 정확도가 가장 높았던 Fixed-weight 모델이 overconfidence 때문에 Fixed 0.9에서는 오히려 가장 나빴던 것이 그 예임
 
-다만 모든 결과는 단일 seed, QuickDraw 20-class, 2-layer Mamba 조건에서 나온 것이라 0.5%p 안팎의 차이는 seed에 따라 달라질 수 있음. 같은 정확도 비교는 곡선을 보간한 값이고, 정지 정책별 Latency는 실측하지 않았음
+다만 모든 결과는 단일 seed, QuickDraw 20-class, 2-layer Mamba 조건에서 나온 것이라 0.5%p 안팎의 차이는 seed에 따라 달라질 수 있음. 같은 정확도 비교는 곡선을 보간한 값임
 
 ## 참고 문헌
 

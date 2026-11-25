@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import time
 from pathlib import Path
 
@@ -76,46 +77,116 @@ def _read_top(logits: torch.Tensor) -> tuple[float, int]:
     return top.values.item(), top.indices.item()
 
 
-def _run_recompute(model, x, n_obs, threshold, state=None):
+# ---- 정지 정책: (시점 index, feature, 클래스 확률, 정지 logit) → 멈출지 여부 [1] bool 텐서 ----
+class FixedThresholdPolicy:
+    """팀 공통 baseline 규칙: 최대 클래스 확률이 threshold 이상이면 정지."""
+    time_dependent = False  # 같은 입력이면 어느 시점이든 같은 결정
+    flops = 0
+
+    def __init__(self, threshold: float):
+        self.threshold = threshold
+        self.label = f"Fixed threshold {threshold}"
+
+    def __call__(self, k, feature, probs, stop_logit):
+        return probs.max(-1).values >= self.threshold
+
+
+class StopHeadPolicy:
+    """ELECTS: 모델의 정지 head가 낸 정지 확률이 기준 이상이면 정지."""
+    time_dependent = False
+    flops = 0  # 정지 head 비용은 qd/flops.py의 head_flops에 이미 포함된다
+
+    def __init__(self, stop_prob: float):
+        self.logit = math.log(stop_prob / (1 - stop_prob))
+        self.label = f"ELECTS 정지 head (정지 확률 ≥ {stop_prob})"
+
+    def __call__(self, k, feature, probs, stop_logit):
+        return stop_logit >= self.logit
+
+
+class DOSPolicy:
+    """Deep Optimal Stopping: 관찰 시점마다 따로 학습된 정지 신경망 (qd/optimal_stopping.py)."""
+    time_dependent = True  # 시점마다 다른 신경망을 쓴다
+
+    def __init__(self, path, device):
+        from qd.optimal_stopping import StopNet
+        saved = torch.load(path, map_location=device, weights_only=True)
+        self.kind = saved["kind"]
+        self.nets = torch.nn.ModuleList(
+            StopNet(saved["d_in"], saved["hidden"]) for _ in range(saved["n_times"] - 1)).to(device)
+        self.nets.load_state_dict(saved["nets"])
+        self.nets.eval()
+        self.flops = sum(m.in_features * m.out_features
+                         for m in self.nets[0].modules() if isinstance(m, torch.nn.Linear))
+        self.label = f"Deep Optimal Stopping (cost {saved['cost']}, 입력 {self.kind})"
+
+    def __call__(self, k, feature, probs, stop_logit):
+        if k >= len(self.nets):  # 마지막 시점은 강제 정지
+            return torch.ones(1, dtype=torch.bool, device=probs.device)
+        parts = [probs, probs.sort(dim=-1, descending=True).values]  # qd.optimal_stopping.build_states와 같은 입력
+        if self.kind == "feature+probs":
+            parts.insert(0, feature)
+        return self.nets[k](torch.cat(parts, dim=-1)) >= 0
+
+
+def _decide(policy, k: int, readout) -> tuple[float, int, bool]:
+    """모델 출력 → (최대 확률, 예측 클래스, 멈출지). GPU에서 값을 한 번에 가져온다."""
+    feature, logits, stop_logit = readout
+    probs = logits.softmax(-1)
+    top = probs.max(-1)
+    stop = policy(k, feature, probs, stop_logit)
+    conf, pred, stop = torch.stack([top.values, top.indices.float(), stop.float()]).flatten().tolist()
+    return conf, int(pred), bool(stop)
+
+
+def _run_recompute(model, x, n_obs, policy, state=None):
     """관찰 시점마다 앞 m개 점을 처음부터 다시 추론한다."""
-    seen, conf, pred = 0, 0.0, -1
-    latency, points_processed, n_readouts = 0.0, 0, 0
+    seen, readout, conf, pred, stop = 0, None, 0.0, -1, False
+    latency, points_processed, n_readouts, n_decisions = 0.0, 0, 0, 0
     for k, m in enumerate(n_obs):
         m = int(m)
-        if m != seen:  # 새 점이 들어왔을 때만 다시 예측
+        new_points = m != seen
+        if new_points or policy.time_dependent:
             torch.cuda.synchronize()
             t0 = time.perf_counter()
-            conf, pred = _read_top(model(x[:, :m], last_only=True))
+            if new_points:  # 새 점이 들어왔을 때만 모델을 다시 돌린다
+                readout = model.readout(model.encode(x[:, :m], last_only=True))
+                points_processed += m
+                n_readouts += 1
+                seen = m
+            conf, pred, stop = _decide(policy, k, readout)
             latency += time.perf_counter() - t0
-            points_processed += m
-            n_readouts += 1
-            seen = m
-        if conf >= threshold or k == len(n_obs) - 1:
+            n_decisions += 1
+        if stop or k == len(n_obs) - 1:
             break
-    return k, pred, conf, latency, points_processed, n_readouts
+    return k, pred, conf, latency, points_processed, n_readouts, n_decisions, stop
 
 
-def _run_streaming(model, x, n_obs, threshold, state):
+def _run_streaming(model, x, n_obs, policy, state):
     """상태를 유지하면서, 직전 관찰 시점 이후에 새로 들어온 점만 하나씩 처리한다."""
     for conv_state, ssm_state in state:  # 새 스케치이므로 상태를 비운다
         conv_state.zero_()
         ssm_state.zero_()
-    seen, conf, pred = 0, 0.0, -1
-    latency, n_readouts = 0.0, 0
+    seen, readout, conf, pred, stop = 0, None, 0.0, -1, False
+    latency, n_readouts, n_decisions = 0.0, 0, 0
     for k, m in enumerate(n_obs):
         m = int(m)
-        if m != seen:
+        new_points = m != seen
+        if new_points or policy.time_dependent:
             torch.cuda.synchronize()
             t0 = time.perf_counter()
-            for t in range(seen, m):  # 새 점들만
-                feature = model.step(x[:, t], state)
-            conf, pred = _read_top(model.classify(feature))
+            if new_points:
+                for t in range(seen, m):  # 새 점들만
+                    hidden = model.step(x[:, t], state)
+                readout = model.readout(hidden)
+                n_readouts += 1
+                seen = m
+            conf, pred, stop = _decide(policy, k, readout)
             latency += time.perf_counter() - t0
-            n_readouts += 1
-            seen = m
-        if conf >= threshold or k == len(n_obs) - 1:
+            n_decisions += 1
+        if stop or k == len(n_obs) - 1:
             break
-    return k, pred, conf, latency, seen, n_readouts
+    return k, pred, conf, latency, seen, n_readouts, n_decisions, stop
 
 
 RUNNERS = {"recompute": _run_recompute, "streaming": _run_streaming}
@@ -123,7 +194,7 @@ RUNNERS = {"recompute": _run_recompute, "streaming": _run_streaming}
 
 @torch.inference_mode()
 def early_stopping_eval(model, split: SketchSplit, indices: torch.Tensor, fractions,
-                        threshold: float, warmup_iters: int, mode: str) -> dict:
+                        policy, warmup_iters: int, mode: str) -> dict:
     """batch size 1로 정지 정책을 실제로 실행하면서 스케치별 기록을 남긴다."""
     model.eval()
     device = split.points.device
@@ -136,7 +207,7 @@ def early_stopping_eval(model, split: SketchSplit, indices: torch.Tensor, fracti
 
     # GPU 예열: 처음 몇 번은 느리므로 측정에서 뺀다.
     for i in indices[:warmup_iters].tolist():
-        run(model, sketch(i), n_obs[i], threshold, state)
+        run(model, sketch(i), n_obs[i], policy, state)
 
     n = len(indices)
     rec = {
@@ -145,12 +216,14 @@ def early_stopping_eval(model, split: SketchSplit, indices: torch.Tensor, fracti
         "confidence": np.zeros(n, dtype=np.float64),
         "latency": np.zeros(n, dtype=np.float64),          # 정지까지 누적 추론 시간(초)
         "points_processed": np.zeros(n, dtype=np.int64),   # 정지까지 모델이 계산한 점 개수
-        "n_readouts": np.zeros(n, dtype=np.int64),         # 정지까지 예측을 읽은 횟수
+        "n_readouts": np.zeros(n, dtype=np.int64),         # 정지까지 모델 예측을 읽은 횟수
+        "n_decisions": np.zeros(n, dtype=np.int64),        # 정지까지 정지 정책을 실행한 횟수
+        "stopped_by_policy": np.zeros(n, dtype=bool),      # 강제 정지가 아니라 정책이 멈췄는지
     }
     for row, i in enumerate(indices.tolist()):
         (rec["stop_index"][row], rec["pred"][row], rec["confidence"][row], rec["latency"][row],
-         rec["points_processed"][row], rec["n_readouts"][row]) = run(
-            model, sketch(i), n_obs[i], threshold, state)
+         rec["points_processed"][row], rec["n_readouts"][row], rec["n_decisions"][row],
+         rec["stopped_by_policy"][row]) = run(model, sketch(i), n_obs[i], policy, state)
     return rec
 
 
@@ -171,13 +244,14 @@ def single_pass_latency(model, split: SketchSplit, indices: torch.Tensor, warmup
     return out
 
 
-def summarize(rec: dict, labels: np.ndarray, fractions, threshold: float,
+def summarize(rec: dict, labels: np.ndarray, fractions, policy_flops: int,
               classes: list[str], per_token: int, head: int) -> dict:
     """스케치별 기록 → 팀 공통 지표."""
     fractions = np.asarray(fractions)
     correct = rec["pred"] == labels
     stop_fraction = fractions[rec["stop_index"]]
-    flops = per_token * rec["points_processed"] + head * rec["n_readouts"]
+    flops = (per_token * rec["points_processed"] + head * rec["n_readouts"]
+             + policy_flops * rec["n_decisions"])
     latency_ms = rec["latency"] * 1e3
 
     result = {
@@ -191,7 +265,7 @@ def summarize(rec: dict, labels: np.ndarray, fractions, threshold: float,
         },
         "mean_points_processed": float(rec["points_processed"].mean()),
         "mean_readouts": float(rec["n_readouts"].mean()),
-        "stopped_by_threshold_rate": float((rec["confidence"] >= threshold).mean()),
+        "stopped_by_policy_rate": float(rec["stopped_by_policy"].mean()),
         "stop_distribution": [],
         "per_class": [],
     }
@@ -230,7 +304,8 @@ def to_markdown(r: dict) -> str:
         f"- 데이터: 공식 Sketch-RNN QuickDraw 분할, {info['n_classes']}개 클래스, "
         f"{info['split']} {info['n_split']:,}개 중 {es['n_sketches']:,}개 평가",
         f"- 모델: {info['model']} (파라미터 {info['n_params']:,}개), 체크포인트 epoch {info['checkpoint_epoch']}",
-        f"- 평가: batch size 1, {info['gpu']}, fp32, threshold {es['threshold']}, "
+        f"- 정지 정책: {es['policy']}",
+        f"- 평가: batch size 1, {info['gpu']}, fp32, "
         f"관찰 시점 {len(r['fractions'])}개 ({r['fractions'][0]:.0%}~{r['fractions'][-1]:.0%})",
     ]
     if info.get("train"):
@@ -250,7 +325,7 @@ def to_markdown(r: dict) -> str:
             lambda s: f"{s['cumulative_latency_ms']['median']:.2f} / {s['cumulative_latency_ms']['p95']:.2f} ms"),
         row("정지까지 모델이 계산한 점 개수 (평균)", lambda s: f"{s['mean_points_processed']:.1f}"),
         row("정지까지 예측 횟수 (평균)", lambda s: f"{s['mean_readouts']:.2f}"),
-        row("threshold를 넘겨서 멈춘 비율", lambda s: f"{s['stopped_by_threshold_rate']:.1%}"),
+        row("강제 정지(100%) 전에 정책이 멈춘 비율", lambda s: f"{s['stopped_by_policy_rate']:.1%}"),
         "",
     ]
     if es.get("decision_agreement") is not None:
@@ -308,11 +383,19 @@ def main() -> None:
     parser.add_argument("--split", default=None, choices=["valid", "test"])
     parser.add_argument("--limit", type=int, default=None, help="무작위로 이 개수만 평가 (빠른 확인용)")
     parser.add_argument("--run-name", default=None, help="설정 파일의 run_name 덮어쓰기")
+    parser.add_argument("--policy", default="fixed", choices=["fixed", "stop_head", "dos"],
+                        help="정지 정책: fixed(설정의 threshold), stop_head(ELECTS), dos(~/runs/<run>/dos_policy.pt)")
+    parser.add_argument("--stop-prob", type=float, default=0.5, help="stop_head 정책의 정지 확률 기준")
+    parser.add_argument("--modes", nargs="+", default=None, choices=["streaming", "recompute"],
+                        help="설정 파일의 eval.modes 덮어쓰기")
+    parser.add_argument("--tag", default=None, help="결과 파일 이름에 붙일 꼬리표 (eval_<split>_<tag>)")
     args = parser.parse_args()
 
     cfg = load_config(args.config)
     if args.run_name:
         cfg["run_name"] = args.run_name
+    if args.modes:
+        cfg["eval"]["modes"] = args.modes
     ec = cfg["eval"]
     out = run_dir(cfg)
     split_name = args.split or ec["split"]
@@ -335,6 +418,12 @@ def main() -> None:
     labels = split.labels[indices].cpu().numpy()
     n_points = split.lengths[indices].cpu().numpy()
     per_token, head = flops_per_token(model), head_flops(model)
+    if args.policy == "fixed":
+        policy = FixedThresholdPolicy(ec["threshold"])
+    elif args.policy == "stop_head":
+        policy = StopHeadPolicy(args.stop_prob)
+    else:
+        policy = DOSPolicy(out / "dos_policy.pt", device)
 
     curve = accuracy_by_fraction(model, split, ec["fractions"], cfg["train"]["eval_batch_size"])
 
@@ -343,7 +432,7 @@ def main() -> None:
     for mode in ec["modes"]:
         t0 = time.time()
         records[mode] = early_stopping_eval(model, split, indices, ec["fractions"],
-                                            ec["threshold"], ec["warmup_iters"], mode)
+                                            policy, ec["warmup_iters"], mode)
         seconds[mode] = round(time.time() - t0, 1)
     agreement = None
     if len(records) == 2:  # 두 방식이 같은 결정을 내리는지 (수치 오차로 아주 드물게 달라질 수 있다)
@@ -376,11 +465,12 @@ def main() -> None:
             "latency_ms_mean": float(full_latency.mean() * 1e3),
         },
         "early_stopping": {
-            "threshold": ec["threshold"],
+            "policy": policy.label,
+            "policy_flops_per_decision": policy.flops,
             "n_sketches": int(len(indices)),
             "decision_agreement": agreement,
             "modes": {
-                mode: summarize(rec, labels, ec["fractions"], ec["threshold"],
+                mode: summarize(rec, labels, ec["fractions"], policy.flops,
                                 meta["classes"], per_token, head)
                 for mode, rec in records.items()
             },
@@ -391,7 +481,7 @@ def main() -> None:
         with open(summary_path, encoding="utf-8") as f:
             result["info"]["train"] = json.load(f)
 
-    suffix = f"_limit{args.limit}" if args.limit else ""
+    suffix = (f"_{args.tag}" if args.tag else "") + (f"_limit{args.limit}" if args.limit else "")
     json_path = out / f"eval_{split_name}{suffix}.json"
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(result, f, indent=2, ensure_ascii=False)
