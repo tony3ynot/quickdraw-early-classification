@@ -21,3 +21,7 @@ venv/
 .idea/
 .DS_Store
 Thumbs.db
+
+# 팀원에게 받은 자료 (모델, 예측 저장본) — 크기가 커서 올리지 않는다
+handoff/
+*.zip
