@@ -1,0 +1,33 @@
+# 후속 실험 (B0~B4): Mamba baseline에서 정지 점수의 학습 목표와 입력을 비교한다.
+# Transformer 실험과 같은 valid 분할, 같은 AGC 설정을 쓴다. 예측은 qd/dump.py 로 저장한 것이다.
+name: mamba_baseline
+out_dir: ~/runs/stop_score_study
+fractions: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+
+traces:
+  # python -m qd.dump --config <모델 설정> --splits train --logits-only
+  train: {format: npz, path: ~/runs/mamba2_20cls/obs_train_logits.npz}
+  # python -m qd.dump --config <모델 설정>
+  valid: {format: npz, path: ~/runs/mamba2_20cls/obs_valid.npz}
+  test: {format: npz, path: ~/runs/mamba2_20cls/obs_test.npz}
+
+# valid 50,000개의 내부 분할 (model_selection 10,000 / screening 20,000 / calibration 20,000)
+partitions: data_splits/validation_partitions.npz
+
+agc:
+  alpha: 0.03            # 허용하는 누적 조건부 Harmful Gap
+  delta: 0.01            # 조건 5개를 함께 보장하도록 0.05를 5로 나눈 값
+  grid_step: 0.001
+
+heads:
+  hidden: 128
+  epochs: 3              # (스케치, 시점) 쌍 1,400만 개 기준
+  batch_size: 16384
+  lr: 1.0e-3
+  weight_decay: 1.0e-4
+  eval_every: 200        # 이 step마다 선택용 데이터로 확인하고 가장 좋은 상태를 남긴다
+  seeds: [0, 1, 2]
+
+bootstrap:
+  repeats: 2000
+  seed: 20261123

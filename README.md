@@ -19,6 +19,10 @@
 | `qd/optimal_stopping.py` | Deep Optimal Stopping 정지 정책 학습 |
 | `qd/stop_report.py` | 한 모델에서 정지 정책들을 비교하는 보고서 생성 |
 | `configs/mamba_20cls_elects.yaml` | ELECTS(정지 확률을 분류와 함께 학습) 설정 |
+| `qd/agc.py` | AGC 정지 기준 보정 (Transformer 담당 팀원의 구현을 그대로 사용) |
+| `qd/stop_scores.py` | 후속 실험: 정지 점수의 학습 목표와 입력 비교 (B0~B4) |
+| `configs/stop_score_study_*.yaml` | 후속 실험 설정 (Transformer 2개, Mamba 3개) |
+| `data_splits/` | 후속 실험에서 쓰는 valid 내부 분할 |
 | `tests/test_causality.py` | 모델이 미래의 점을 쓰지 않는지 검사 |
 | `scripts/` | VM 환경 설치, 학습+평가 실행 스크립트 |
 | `results/` | 실험 결과 요약 (작은 파일만) |
@@ -111,6 +115,15 @@ baseline Mamba에 두 알고리즘을 적용한 결과다. 전체 내용은 [res
 - Deep Optimal Stopping은 분류 모델을 그대로 두고, 같은 정확도에서 1.6%p 일찍 멈춘다.
 - ELECTS는 분류 모델을 개선했지만(같은 정확도에서 1.7~7.1%p 일찍 정지), 학습된 정지 head는 고정 threshold보다 못했다.
 - ELECTS의 정지 확률을 평균값으로 고정한 비교 실험에서 이득의 2/3 이상이 재현됐다. 효과의 대부분은 관찰 시점에 loss 비중을 더 준 데서 온다.
+
+## 결과: 정지 점수 학습 목표 비교 (후속 실험)
+
+분류 모델을 고정하고 "멈춰도 되는가"를 판단하는 점수만 학습해서, 무엇을 맞히게 학습하는 것이 좋은지 비교했다. Transformer 2개와 Mamba 3개에서 같은 AGC 설정으로 실험했다. 전체 내용은 [results/stop_score_study/README.md](results/stop_score_study/README.md)에 있다.
+
+- 학습한 점수를 쓰면 Max Softmax보다 평균 관찰률이 0.7~1.6%p 줄었다. 5개 모델 모두에서 재현됐다.
+- 학습 목표를 Harmful Risk로 맞추면 Correctness보다 0.1~0.5%p 더 일찍 멈췄다. 폭은 작지만 10번의 비교에서 방향이 모두 같았다.
+- 과거 예측 이력은 거의 도움이 되지 않았다.
+- 과신 문제는 학습한 점수가 아니라 AGC의 시점별 threshold가 해결했다.
 
 ## 실행 방법
 

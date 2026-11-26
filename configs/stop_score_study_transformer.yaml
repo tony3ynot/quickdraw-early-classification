@@ -12,7 +12,7 @@ traces:
   test: {format: npz, path: ~/handoff/predictions/transformer_handoff/traces/baseline/test_traces.npz}
 
 # valid 50,000개의 내부 분할 (model_selection 10,000 / screening 20,000 / calibration 20,000)
-partitions: ~/handoff/core/transformer_handoff/data_splits/validation_partitions.npz
+partitions: data_splits/validation_partitions.npz
 
 agc:
   alpha: 0.03            # 허용하는 누적 조건부 Harmful Gap

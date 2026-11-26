@@ -8,8 +8,9 @@
 실행 (VM의 레포 루트에서):
   python -m qd.dump --config configs/mamba_20cls.yaml                       # valid, test
   python -m qd.dump --config configs/mamba_20cls.yaml --splits train --limit 200000
+  python -m qd.dump --config configs/mamba_20cls.yaml --splits train --logits-only   # train 전체, logits만
 
-출력: ~/runs/<run_name>/obs_<split>.npz
+출력: ~/runs/<run_name>/obs_<split>.npz  (--logits-only 이면 obs_<split>_logits.npz)
 """
 from __future__ import annotations
 
@@ -51,14 +52,14 @@ class Observations:
             return Observations(**{k: f[k] for k in f.files})
 
     def subset(self, idx: np.ndarray) -> "Observations":
-        return Observations(self.feature[idx], self.logits[idx],
+        return Observations(self.feature[idx] if len(self.feature) else self.feature, self.logits[idx],
                             self.stop_logit[idx] if len(self.stop_logit) else self.stop_logit,
                             self.labels[idx], self.n_obs[idx], self.fractions)
 
 
 @torch.inference_mode()
 def collect(model, split: SketchSplit, fractions, batch_size: int,
-            limit: int | None = None, seed: int = 0) -> Observations:
+            limit: int | None = None, seed: int = 0, logits_only: bool = False) -> Observations:
     model.eval()
     device = split.points.device
     order = torch.arange(len(split))
@@ -70,14 +71,15 @@ def collect(model, split: SketchSplit, fractions, batch_size: int,
         feature, logits, stop_logit = model.readout(model.encode(x))   # [B, L, ...]
         n_obs = prefix_lengths(lengths, fractions)                     # [B, K]
         pos = n_obs - 1
-        feats.append(feature.gather(1, pos.unsqueeze(-1).expand(-1, -1, feature.shape[-1])).half().cpu())
+        if not logits_only:  # feature는 크기가 커서(스케치당 10 × d_model) train 전체에서는 생략할 수 있다
+            feats.append(feature.gather(1, pos.unsqueeze(-1).expand(-1, -1, feature.shape[-1])).half().cpu())
         logits_all.append(logits.gather(1, pos.unsqueeze(-1).expand(-1, -1, logits.shape[-1])).float().cpu())
         if stop_logit is not None:
             stops.append(stop_logit.gather(1, pos).float().cpu())
         labels_all.append(labels.cpu())
         n_obs_all.append(n_obs.cpu())
     return Observations(
-        feature=torch.cat(feats).numpy(),
+        feature=torch.cat(feats).numpy() if feats else np.zeros(0, dtype=np.float16),
         logits=torch.cat(logits_all).numpy(),
         stop_logit=torch.cat(stops).numpy() if stops else np.zeros(0, dtype=np.float32),
         labels=torch.cat(labels_all).numpy(),
@@ -93,6 +95,7 @@ def main() -> None:
     parser.add_argument("--checkpoint", default=None, help="기본값: ~/runs/<run_name>/best.pt")
     parser.add_argument("--splits", nargs="+", default=["valid", "test"])
     parser.add_argument("--limit", type=int, default=None, help="분할에서 무작위로 이 개수만 저장")
+    parser.add_argument("--logits-only", action="store_true", help="feature 없이 logits만 저장 (파일 이름에 _logits)")
     args = parser.parse_args()
 
     cfg = load_config(args.config)
@@ -108,10 +111,11 @@ def main() -> None:
     for name in args.splits:
         split = load_split(cache, name).to(device)
         obs = collect(model, split, cfg["eval"]["fractions"], cfg["train"]["eval_batch_size"],
-                      limit=args.limit, seed=cfg["seed"])
-        obs.save(out / f"obs_{name}.npz")
+                      limit=args.limit, seed=cfg["seed"], logits_only=args.logits_only)
+        path = out / (f"obs_{name}_logits.npz" if args.logits_only else f"obs_{name}.npz")
+        obs.save(path)
         acc = (obs.logits.argmax(-1) == obs.labels[:, None]).mean(0)
-        print(f"{name}: {len(obs.labels):,}개 저장 → {out / f'obs_{name}.npz'}")
+        print(f"{name}: {len(obs.labels):,}개 저장 → {path}")
         print("  관찰 비율별 정확도: " + "  ".join(f"{a:.3f}" for a in acc))
         del split
 

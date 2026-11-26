@@ -25,3 +25,6 @@ Thumbs.db
 # 팀원에게 받은 자료 (모델, 예측 저장본) — 크기가 커서 올리지 않는다
 handoff/
 *.zip
+
+# 예외: valid 내부 분할 인덱스 (작은 파일, 실험 재현에 필요)
+!data_splits/*.npz
